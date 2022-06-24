@@ -29,14 +29,14 @@ contains
     integer :: is, ie, js, je, nl, nx, ny
     integer :: c, r, s                        
     real    :: plmHGT                       
-    real, save, allocatable :: plmFRAC(:,:,:,:)
-    real(AQM_KIND_R8) :: zf, zh, qv
+    real, allocatable :: plmFRAC(:,:,:,:)
+    real(AQM_KIND_R8) :: zf, zh
     type(aqm_state_type), pointer :: state
     type(aqm_config_type), pointer :: config   
 
     ! -- local parameters
-    real, parameter :: rcp = 2./7.
-    real, parameter :: p_ref = 1.e+05
+!    real, parameter :: rcp = 2./7.
+!    real, parameter :: p_ref = 1.e+05
 
     ! -- begin
     if (present(rc)) rc = AQM_RC_SUCCESS
