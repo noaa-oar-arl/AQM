@@ -27,10 +27,11 @@ contains
     integer :: localrc
     integer :: is, ie, js, je, nl, nx, ny
     integer :: c, r, s                        
-    integer :: emlays
     real    :: plmHGT                       
-    real(AQM_KIND_R8) :: hmixl, qvl, zf, zh
+    real, save, allocatable :: plmFRAC(:,:,:,:)
+    real(AQM_KIND_R8) :: zf, zh
     type(aqm_state_type), pointer :: state
+   
 
     ! -- local parameters
     real, parameter :: rcp = 2./7.
@@ -39,10 +40,7 @@ contains
     ! -- begin
     if (present(rc)) rc = AQM_RC_SUCCESS
 
-    nullify(phi)
     nullify(state)
-
-    profile = 0.0
 
     ! -- get model info
     call aqm_model_get(stateIn=state, rc=localrc)
@@ -56,7 +54,10 @@ contains
 
     nx = ie - is + 1
     ny = je - js + 1
-    emlays=nl
+
+    if ( .not. allocated ( plmFRAC   ) )  &
+    allocate ( plmFRAC   (nx, ny, ns, nl)      )  ! 4D, Briggs Plume Fractions
+    plmFRAC = 0.0
 
     ! -- loop through model column and rows
     do r = 1, ny
@@ -66,12 +67,6 @@ contains
         zf = state % phii(c,r,:) * onebg   !full layers (fv3 interfaces)
         zh = state % phil(c,r,:) * onebg   !center layers (fv3 layers)
 
-        !need 2D mixing layer height    ----NEEDS WORK HERE ---
-        hmixl  = state % hmix(c,r)
-        !need 3D mixing ratios 
-        qvl    = state % qv(c,r,:)
-        !                            ----NEEDS WORK HERE ---
-
         ! -- loop through sub-domain stack points
         do s = 1, ns  
 
@@ -80,25 +75,27 @@ contains
         call plumeRiseBriggs(zf,                      &  !full layer heights (m)
                              zh,                      &  !center layer heights (m)
                              state % temp(c,r,:),     &  !temperatures (K)
-                             qvl,                     &  !mixing ratios 
+                             state % qv(c,r,:),       &  !mixing ratios (***NEED THIS***)
                              state % uwind(c,r,:),    &  !x-direction winds (m/s)      
                              state % vwind(c,r,:),    &  !y-direction winds (m/s)        
                              state % prl(c,r,:),      &  !pressures at full layers
                              state % hfx(c,r),        &  !sensible heat flux (m K/s)
-                             hmixl,                   &  !mixing height (m)
+                             state % hmix(c,r),       &  !mixing height (m) (***NEED THIS***)
                              state % ustar(c,r),      &  !friction velocity (m/s)
                              state % tsfc(c,r),       &  !surface temperature (K)
                              state % psfc(c,r),       &  !surface pressure
-                             emlays,                  &  !# of model/emission layers
+                             nl,                      &  !# of model/emission layers
                              stkdm(c,r,s),            &  !stack diameter (m)
                              stkht(c,r,s),            &  !stack height (m)
                              stktk(c,r,s),            &  !stack temperature (K)
                              stkve(c,r,s),            &  !stack exit velocity (m/s)
                              plmHGT,                  &  !plume centerline height
-                             profile(c,r,s,:)         &  !plume fractions/profile
+                             plmFRAC(c,r,s,:)         &  !plume fractions/profile
          end do
       end do
     end do
+
+    profile = plmFRAC
 
   end subroutine aqm_plume_briggs
 
