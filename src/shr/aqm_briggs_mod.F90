@@ -29,7 +29,7 @@ contains
     integer :: c, r, s                        
     integer :: emlays
     real    :: plmHGT                       
-    real(AQM_KIND_R8) :: hfxl, hmixl, ustarl, tsfcl, psfcl 
+    real(AQM_KIND_R8) :: hmixl, qvl, zf, zh
     type(aqm_state_type), pointer :: state
 
     ! -- local parameters
@@ -62,27 +62,30 @@ contains
     do r = 1, ny
       do c = 1, nx
 
-        !surface meteorology from state
-       hfxl   = state % hfx(c,r)
-       hmixl  = state % hmix(c,r)
-       ustarl = state % ustar(c,r)
-       tsfcl  = state % tsfc(c,r)
-       psfcl  = state % psfc(c,r)
+        !calculate model layer heights from geopotential
+        zf = state % phii(c,r,:) * onebg   !full layers (fv3 interfaces)
+        zh = state % phil(c,r,:) * onebg   !center layers (fv3 layers)
+
+        !need 2D mixing layer height    ----NEEDS WORK HERE ---
+        hmixl  = state % hmix(c,r)
+        !need 3D mixing ratios 
+        qvl    = state % qv(c,r,:)
+        !                            ----NEEDS WORK HERE ---
 
         ! -- loop through sub-domain stack points
         do s = 1, ns  
 
         ! -- call Briggs's algorithm to compute final centerline height of plume top
         !    and final plume fractions to pass out as 4D emission profile
-        call plumeRiseBriggs(state % phil(c,r,:),     &  !full layer heights (m)
-                             state % phil(c,r,:),     &  !center layer heights (m)
+        call plumeRiseBriggs(zf,                      &  !full layer heights (m)
+                             zh,                      &  !center layer heights (m)
                              state % temp(c,r,:),     &  !temperatures (K)
-                             state % wr(c,r,:),       &  !mixing ratios
+                             qvl,                     &  !mixing ratios 
                              state % uwind(c,r,:),    &  !x-direction winds (m/s)      
                              state % vwind(c,r,:),    &  !y-direction winds (m/s)        
                              state % prl(c,r,:),      &  !pressures at full layers
                              state % hfx(c,r),        &  !sensible heat flux (m K/s)
-                             state % hmix(c,r),       &  !mixing height (m)
+                             hmixl,                   &  !mixing height (m)
                              state % ustar(c,r),      &  !friction velocity (m/s)
                              state % tsfc(c,r),       &  !surface temperature (K)
                              state % psfc(c,r),       &  !surface pressure
