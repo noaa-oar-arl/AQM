@@ -2,7 +2,8 @@ module aqm_briggs_mod
 
   use aqm_const_mod, only : grav, onebg
   use aqm_emis_mod
-  use aqm_model_mod, only : aqm_model_get, aqm_model_domain_get
+  use aqm_model_mod, only : aqm_model_get, aqm_model_domain_get, &
+                            aqm_config_type
   use aqm_state_mod
   use aqm_rc_mod
 
@@ -29,9 +30,9 @@ contains
     integer :: c, r, s                        
     real    :: plmHGT                       
     real, save, allocatable :: plmFRAC(:,:,:,:)
-    real(AQM_KIND_R8) :: zf, zh
+    real(AQM_KIND_R8) :: zf, zh, qv
     type(aqm_state_type), pointer :: state
-   
+    type(aqm_config_type), pointer :: config   
 
     ! -- local parameters
     real, parameter :: rcp = 2./7.
@@ -41,9 +42,10 @@ contains
     if (present(rc)) rc = AQM_RC_SUCCESS
 
     nullify(state)
+    nullify(config)
 
     ! -- get model info
-    call aqm_model_get(stateIn=state, rc=localrc)
+    call aqm_model_get(config=config, stateIn=state, rc=localrc)
     if (aqm_rc_check(localrc, msg="Failed to retrieve model state", &
       file=__FILE__, line=__LINE__)) return
 
@@ -75,7 +77,7 @@ contains
         call plumeRiseBriggs(zf,                      &  !full layer heights (m)
                              zh,                      &  !center layer heights (m)
                              state % temp(c,r,:),     &  !temperatures (K)
-                             state % qv(c,r,:),       &  !mixing ratios (***NEED THIS***)
+                             state % tr(c,r,:,config % species % p_atm_qv), &  !mixing ratios
                              state % uwind(c,r,:),    &  !x-direction winds (m/s)      
                              state % vwind(c,r,:),    &  !y-direction winds (m/s)        
                              state % prl(c,r,:),      &  !pressures at full layers
