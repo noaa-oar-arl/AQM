@@ -82,7 +82,7 @@ contains
                              state % vwind(c,r,:),    &  !y-direction winds (m/s)        
                              state % prl(c,r,:),      &  !pressures at full layers
                              state % hfx(c,r),        &  !sensible heat flux (m K/s)
-                             state % hmix(c,r),       &  !mixing height (m) (***NEED THIS***)
+                             state % hpbl(c,r),       &  !mixing height (m) (=PBLH in TKE)
                              state % ustar(c,r),      &  !friction velocity (m/s)
                              state % tsfc(c,r),       &  !surface temperature (K)
                              state % psfc(c,r),       &  !surface pressure
