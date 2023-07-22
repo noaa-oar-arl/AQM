@@ -86,6 +86,7 @@ LOGICAL FUNCTION DESC3( FNAME )
   IMPLICIT NONE
 
   CHARACTER(LEN=*), INTENT(IN) :: FNAME
+  CHARACTER(LEN=len(FNAME)) :: FNAME_TRIM !(Wei Li)
 
   INCLUDE SUBST_FILES_ID
  
@@ -106,10 +107,9 @@ LOGICAL FUNCTION DESC3( FNAME )
   STIME3D = 0
   TSTEP3D = 0
 
-  IF ( (TRIM(FNAME) .EQ. TRIM(INIT_GASC_1)) .OR. &
-       (TRIM(FNAME) .EQ. TRIM(INIT_AERO_1)) .OR. &
-       (TRIM(FNAME) .EQ. TRIM(INIT_NONR_1)) .OR. &
-       (TRIM(FNAME) .EQ. TRIM(INIT_TRAC_1)) ) THEN
+  FNAME_TRIM = TRIM(FNAME_TRIM)
+  !!Replace INIT_GASC,AERO,NONR,TRAC to INIT_CONC_1 (Wei Li)
+  IF ( (TRIM(FNAME) .EQ. TRIM(INIT_CONC_1)) ) THEN
 
     ! -- Input initial background values for the following species
     NVARS3D = 3
@@ -126,7 +126,9 @@ LOGICAL FUNCTION DESC3( FNAME )
 
     call aqm_emis_desc("biogenic", NLAYS3D, NVARS3D, VNAME3D, UNITS3D)
 
-  ELSE IF ( TRIM( FNAME ) .EQ. TRIM( EMIS_1 ) ) THEN
+! EMIS_1 is not used anymore. Change to other env variables. (Wei Li)
+  ELSE IF ( ( (FNAME_TRIM(1:8) .EQ. 'GR_EMIS_') .AND. (len(FNAME_TRIM) .EQ. 11 )) .OR. & 
+            ( (FNAME_TRIM(1:9) .EQ. 'STK_EMIS_').AND. (len(FNAME_TRIM) .EQ. 12 )) ) THEN
 
     NLAYS3D = 0
 
@@ -364,14 +366,14 @@ logical function envyn(name, description, defaultval, status)
       envyn = .false.
       em => aqm_emis_get("biogenic")
       if (associated(em)) envyn = (trim(em % period) == "summer")
-    case ('CTM_AOD')
-      envyn = config % ctm_aod
+   ! case ('CTM_AOD')
+   !   envyn = config % ctm_aod
     case ('CTM_BIOGEMIS')
       envyn = aqm_emis_ispresent("biogenic")
     case ('CTM_DEPVFILE')
       envyn = config % ctm_depvfile
-    case ('CTM_PMDIAG')
-      envyn = config % ctm_pmdiag
+   ! case ('CTM_PMDIAG')
+   !   envyn = config % ctm_pmdiag
     case ('CTM_PHOTODIAG')
       envyn = config % ctm_photodiag
     case ('CTM_PT3DEMIS')
@@ -619,6 +621,7 @@ logical function interpx( fname, vname, pname, &
   implicit none
 
   character(len=*), intent(in)  :: fname, vname, pname
+  CHARACTER(LEN=len(fname)) :: FNAME_TRIM !(Wei Li)
   integer,          intent(in)  :: col0, col1, row0, row1, lay0, lay1
   integer,          intent(in)  :: jdate, jtime
   real,             intent(out) :: buffer(*)
@@ -643,6 +646,7 @@ logical function interpx( fname, vname, pname, &
 
   ! -- begin
   interpx = .false.
+  FNAME_TRIM = TRIM(fname) !(Wei Li)
 
   lbuf = (col1-col0+1) * (row1-row0+1) * (lay1-lay0+1)
   buffer(1:lbuf) = 0.
@@ -857,8 +861,8 @@ logical function interpx( fname, vname, pname, &
         return
     end select
 
-  else if (trim(fname) == trim(EMIS_1)) then
-
+! EMIS_1 is not used anymore. Change to other env variables. (Wei Li)
+  else if ( ( (FNAME_TRIM(1:8) .EQ. 'GR_EMIS_') .AND. (len(FNAME_TRIM) .EQ. 11 )) ) then
     ! -- read in emissions
     call aqm_emis_read("anthropogenic", vname, buffer, rc=localrc)
     if (aqm_rc_test((localrc /= 0), &
@@ -1129,8 +1133,8 @@ LOGICAL FUNCTION  XTRACT3 ( FNAME, VNAME,                           &
       end do
 
     END IF
-
-  ELSE IF ( TRIM(FNAME) .EQ. TRIM(INIT_GASC_1) ) THEN
+  !!Replace INIT_GASC,AERO,NONR,TRAC to INIT_CONC_1 (Wei Li)
+  ELSE IF ( TRIM(FNAME) .EQ. TRIM(INIT_CONC_1) ) THEN
 
     ! -- initialize gas-phase species (ppmV)
     SELECT CASE (TRIM(VNAME))
@@ -1227,25 +1231,25 @@ LOGICAL FUNCTION WRITE3_REAL2D( FNAME, VNAME, JDATE, JTIME, BUFFER )
   type(aqm_state_type), pointer :: stateOut
 
   WRITE3_REAL2D = .TRUE.
-
-  IF ( TRIM( FNAME ) .EQ. TRIM( CTM_AOD_1 ) ) THEN
-
-    WRITE3_REAL2D = .FALSE.
-
-    IF ( TRIM( VNAME ) .EQ. TRIM( ALLVAR3 ) ) THEN
-
-      nullify(stateOut)
-      call aqm_model_get(stateOut=stateOut, rc=localrc)
-      if (aqm_rc_check(localrc, msg="Failure to retrieve model output state", &
-        file=__FILE__, line=__LINE__)) return
-
-      stateOut % aod = BUFFER
-
-    END IF
-
-    WRITE3_REAL2D = .TRUE.
-
-  END IF
+!CTM_AOD_1 seems to be removed. (Wei Li)
+!  IF ( TRIM( FNAME ) .EQ. TRIM( CTM_AOD_1 ) ) THEN
+!
+!    WRITE3_REAL2D = .FALSE.
+!
+!    IF ( TRIM( VNAME ) .EQ. TRIM( ALLVAR3 ) ) THEN
+!
+!      nullify(stateOut)
+!      call aqm_model_get(stateOut=stateOut, rc=localrc)
+!      if (aqm_rc_check(localrc, msg="Failure to retrieve model output state", &
+!        file=__FILE__, line=__LINE__)) return
+!
+!      stateOut % aod = BUFFER
+!
+!    END IF
+!
+!    WRITE3_REAL2D = .TRUE.
+!
+!  END IF
 
 END FUNCTION WRITE3_REAL2D
 
@@ -1273,29 +1277,29 @@ LOGICAL FUNCTION WRITE3_REAL4D( FNAME, VNAME, JDATE, JTIME, BUFFER )
   integer, parameter :: p_pm25at = 23
 
   WRITE3_REAL4D = .TRUE.
-
-  IF ( TRIM( FNAME ) .EQ. TRIM( CTM_PMDIAG_1 ) ) THEN
-
-    WRITE3_REAL4D = .FALSE.
-
-    IF ( TRIM( VNAME ) .EQ. TRIM( ALLVAR3 ) ) THEN
-
-      nullify(config)
-      nullify(stateOut)
-      call aqm_model_get(config=config, stateOut=stateOut, rc=localrc)
-      if (aqm_rc_check(localrc, msg="Failure to retrieve model output state", &
-        file=__FILE__, line=__LINE__)) return
-
-      do s = 0, config % species % ndiag - 2
-        stateOut % tr(:,:,:,config % species % p_diag_beg + s) = &
-          buffer(:,:,:,p_pm25at + s)
-      end do
-
-    END IF
-
-    WRITE3_REAL4D = .TRUE.
-
-  END IF
+!CTM_PMDIAG_1 seems to be removed. (Wei Li)
+!  IF ( TRIM( FNAME ) .EQ. TRIM( CTM_PMDIAG_1 ) ) THEN
+!
+!    WRITE3_REAL4D = .FALSE.
+!
+!    IF ( TRIM( VNAME ) .EQ. TRIM( ALLVAR3 ) ) THEN
+!
+!      nullify(config)
+!      nullify(stateOut)
+!      call aqm_model_get(config=config, stateOut=stateOut, rc=localrc)
+!      if (aqm_rc_check(localrc, msg="Failure to retrieve model output state", &
+!        file=__FILE__, line=__LINE__)) return
+!
+!      do s = 0, config % species % ndiag - 2
+!        stateOut % tr(:,:,:,config % species % p_diag_beg + s) = &
+!          buffer(:,:,:,p_pm25at + s)
+!      end do
+!
+!    END IF
+!
+!    WRITE3_REAL4D = .TRUE.
+!
+!  END IF
 
 END FUNCTION WRITE3_REAL4D
 
