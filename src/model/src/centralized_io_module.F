@@ -112,8 +112,8 @@
         use get_env_module 
         USE UTILIO_DEFN
 #ifdef mpas
-       ! use coupler_module  (beiming tang)
-       ! use mio_module      (beiming tang)
+       ! use coupler_module  
+       ! use mio_module      
 #endif
 
         implicit none
