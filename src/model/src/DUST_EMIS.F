@@ -217,7 +217,7 @@ C-----------------------------------------------------------------------
 
          success = .true.
 
-         CALL LOG_MESSAGE(LOGDEV, 'Initialize Wind-Blown Dust Emissions' )
+         CALL LOG_MESSAGE( LOGDEV, 'Initialize Wind-Blown Dust Emissions' )
 
 C...Populate Master Emissions Map Vector So That Diagnostics 
 C   can be printed in EMIS_MAP
@@ -260,9 +260,9 @@ C...Count the number of mass emissions species
      &              dustoutn( 2,ncols,nrows ),
      &              dustouts( 2,ncols,nrows ), stat = status )
          if ( status .ne. 0 ) then
-           xmsg='*** Failure allocating DUSTOUTM, DUSTOUTN, or DUSTOUTS'
-           call m3warn ( pname, jdate, jtime, xmsg )
-           success = .false.; return
+            xmsg = '*** Failure allocating DUSTOUTM, DUSTOUTN, or DUSTOUTS'
+            call m3warn ( pname, jdate, jtime, xmsg )
+            success = .false.; return
          end if
 
 C Allocate emissions array
@@ -448,7 +448,8 @@ C...append diagnostic variables with mass emissions species
             allocate( diagnm_swap( ndust_diag ), stat = status )
             if ( status .ne. 0 ) then
                xmsg = '*** Failure allocating DIAGNM_SWAP'
-               call m3warn( pname, jdate, jtime, xmsg )               
+               call m3warn( pname, jdate, jtime, xmsg )
+               
                success = .false.; return
             end if
             diagnm_swap = diagnm 
@@ -567,7 +568,7 @@ C Set output file characteristics based on COORD.EXT and open diagnostic file
             end do
 
             fdesc3d( 1 ) = 'windblown dust parameters, variables, and'
-            fdesc3d( 2 ) ='hourly layer-1 windblown dust emission rates'
+            fdesc3d( 2 ) = 'hourly layer-1 windblown dust emission rates'
             do l = 3, mxdesc3
                fdesc3d( l ) = ' '
             end do
@@ -635,7 +636,7 @@ C Parameters:
          real, parameter :: betab_mb = betab * mb  ! = 45.0
 
          character( 24 ) :: ctm_wbdust_fengsha_alpha = 'CTM_WBDUST_FENGSHA_ALPHA' ! env var to (beiming tang)
-                                                      ! retrieve FENGSHA scaling factor
+                                                ! retrieve FENGSHA scaling factor
 
          character( 16 ) :: pname = 'GET_DUST_EMIS'
          character( 16 ) :: vname
@@ -787,8 +788,8 @@ C-----------------------------------------------------------------------
 C---Select dust scheme (beiming tang)
          if ( fengsha ) then
 
-         do r = 1, my_nrows
-         do c = 1, my_ncols
+         do r = 1, nrows
+         do c = 1, ncols
 
             dust_em( c,r ) = 0.0
             soimt( c,r )   = 0.0

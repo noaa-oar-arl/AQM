@@ -112,8 +112,8 @@
         use get_env_module 
         USE UTILIO_DEFN
 #ifdef mpas
-!        use coupler_module !(Wei Li)
-!        use mio_module     !(Wei Li)
+       ! use coupler_module  (beiming tang)
+       ! use mio_module      (beiming tang)
 #endif
 
         implicit none
@@ -236,11 +236,11 @@
         integer, allocatable :: cio_emis_file_endrow(:)
         integer              :: cio_emis_nlays                     ! max value among cio_emis_file_layer
 
-! this is for MPAS only
-        integer, allocatable :: num_dist_layers(:,:)      ! number of layers in MPAS grid has re-distributed emission data
-        real, allocatable    :: dist_frac(:,:,:)          ! calculated layer distribution fraction
-        real, allocatable    :: emis_file_layer_frac(:,:) ! given layer faction information
-        integer              :: mpas_tstep                ! this is assigned in CMAQ_DRIVER
+!! this is for MPAS only
+!        integer, allocatable :: num_dist_layers(:,:)      ! number of layers in MPAS grid has re-distributed emission data
+!        real, allocatable    :: dist_frac(:,:,:)          ! calculated layer distribution fraction
+!        real, allocatable    :: emis_file_layer_frac(:,:) ! given layer faction information
+!        integer              :: mpas_tstep                ! this is assigned in CMAQ_DRIVER
 
 ! - stack emission data
         real, allocatable    :: cio_stack_data(:)
@@ -356,18 +356,18 @@
         CHARACTER( 16 )  :: LT_NAME                     ! LNT name: old Cis NLDNstrk and new is LNT
 
         interface interpolate_var
-!#ifdef mpas
+#ifdef mpas
 !          module procedure r_interpolate_var_1ds,
 !     &                     r_interpolate_var_2d,
 !     &                     i_interpolate_var_2d,
 !     &                     r_interpolate_var_3d
-!#else
+#else
           module procedure r_interpolate_var_1ds,       ! Interpolation for Stack Group Real 1-D Data 
      &                     r_interpolate_var_2d,        ! Interpolation for generic Real 2-D Data 
      &                     i_interpolate_var_2d,        ! Interpolation for generic Integer 2-D Data
      &                     r_interpolate_var_2db,       ! Interpolation for Boundary Real 2-D Data
      &                     r_interpolate_var_3d         ! Interpolation for generic Real 3-D Data 
-!#endif
+#endif
         end interface
 
 ! MPAS only routines:
@@ -428,12 +428,12 @@
      &                             local_tstep, met_tstep, NLDNSTRIKE
           use LSM_Mod, only : LAND_SCHEME
           use cgrid_spcs, only : n_gc_spcd, n_ae_spc
-!#ifdef mpas  (Wei Li)
+#ifdef mpas
 !          use centralized_io_util_module, only : ext_layer_info, cal_distribution , 
 !     &                                           binary_search, quicksort,
 !     &                                           mpas_date_time_to_julian
 !          use util_module, only : secsdiff, sec2time, index1
-!#endif
+#endif
 
           INCLUDE SUBST_FILES_ID             ! file name parameters
 
@@ -462,17 +462,17 @@
 !          n_c3d = 0
 !          n_d3d = 0
 !          size_d3dx = 1
-!
+
 !          if (binary_search( 'LH', vname_2d, n2d_data) .gt. 0) then
 !             lh_avail = .true.
 !          else
 !             lh_avail = .false.
 !          end if
-!
+
 !          n_opened_file = n_opened_file + 1
 !          f_met         = n_opened_file
 !          file_tstep(f_met) = mpas_tstep
-!
+
 !          wspd10_avail = .true.
 #else
 ! met grid cro 2d file
@@ -819,18 +819,18 @@
 #ifdef mpas
 !             floc = search_fname (cio_emis_file_name(n))
 !             cio_emis_file_loc(n) = floc
-!
+
 !             call mpas_date_time_to_julian (mio_file_data(floc)%timestamp(1), tdate(1), ttime(1))
 !             call mpas_date_time_to_julian (mio_file_data(floc)%timestamp(2), tdate(2), ttime(2))
-!
+
 !             file_sdate(f_emis(n)) = tdate(1)
 !             file_stime(f_emis(n)) = ttime(1)
-!
+
 !             diffsec = secsdiff (tdate(1), ttime(1), tdate(2), ttime(2))
-!
+
 !             file_tstep(f_emis(n)) = sec2time(diffsec)
 !             mio_file_data(floc)%tstep = file_tstep(f_emis(n))
-!
+
 !             layer_exist = .false.
 !             do v = 1, mio_file_data(floc)%n_global_atts
 !                if (mio_file_data(floc)%glo_att_name(v) .eq. 'layers') then
@@ -842,7 +842,7 @@
 !     &                                  emis_file_layer_frac(:,n))
 !                end if
 !             end do
-!
+
 !             if (layer_exist) then
 !                do c = 1, ncols
 !                   call cal_distribution (bottom, top, g3ddata(c,1,:,zh_ind), 
@@ -855,14 +855,14 @@
 !                num_dist_layers(:,n) = 1
 !                dist_frac(:,:,n) = 1.0
 !             end if
-!
+
 !             cio_emis_nvars(n) = mio_file_data(floc)%nvars
 !             if (mio_file_data(floc)%nlays .eq. 1) then
 !                n_e2d = n_e2d + cio_emis_nvars(n)
 !             else
 !                n_e3d = n_e3d + cio_emis_nvars(n)
 !             end if
-!
+
 !             call mpas_date_time_to_julian (mio_file_data(floc)%timestamp(1), file_sdate(f_emis(n)), time)
 #else
              IF ( .NOT. OPEN3( fname, FSREAD3, PNAME ) ) THEN
@@ -912,7 +912,7 @@
 
 #ifdef mpas
 !          deallocate (bottom, top)
-!
+
 !          n_dust_vars       = 0
 #else
 
@@ -929,7 +929,7 @@
           end if
 
 #ifndef mpas
-! setup initial condition file
+!! setup initial condition file
 !          n_i3d = 0
 !          IF ( .NOT. OPEN3( ICFILE, FSREAD3, PNAME ) ) THEN
 !             XMSG = 'Open failure for ' // ICFILE
@@ -943,8 +943,8 @@
 !          END IF
 !          call subhfile ( ICFILE, gxoff, gyoff,
 !     &                    STRTCOLIC, ENDCOLIC, STRTROWIC, ENDROWIC )
-!         
-!! remove duplicate name from MET_CRO_3D file
+         
+! remove duplicate name from MET_CRO_3D file
 !          adj = nvars3d
 !          do v = nvars3d, 1, -1
 !             n = index1 (vname3d(v), n_c3d, c3d_name) 
@@ -956,7 +956,7 @@
 !             end if
 !          end do
 !          n_i3d = adj
-!
+
 !          allocate (i3d_name(n_i3d, 3), stat=stat)
 !          if (stat .ne. 0) then
 !             xmsg = 'Failure allocating i3d_name '
@@ -965,8 +965,8 @@
 !          i3d_name(:,1) = vname3d(1:n_i3d) 
 !          i3d_name(:,2) = 'ic'                  ! denote initial condition variable
 !          i3d_name(:,3) = ' '                   ! denote non met variable
-!
-!! setup initial condition file for ISAM
+
+! setup initial condition file for ISAM
 !          n_is3d = 0
 !
 !          if (ISAM_NEW_START == 'N') then
@@ -992,13 +992,13 @@
 !             is3d_name(:,1) = vname3d(1:n_is3d) 
 !             is3d_name(:,2) = 'is'                   ! denote ISAM initial condition variable
 !             is3d_name(:,3) = ' '                    ! denote non met variable
-!
+
 !             file_sdate(f_is_icon) = sdate3d
 !             file_stime(f_is_icon) = stime3d
 !             file_tstep(f_is_icon) = tstep3d
 !             file_xcell(f_is_icon) = xcell3d
 !             file_ycell(f_is_icon) = ycell3d
-!
+
 !          end if   ! ISAM_NEW_START
 #endif
 
@@ -1026,7 +1026,7 @@
 !                end = end + 1
 !                emis_name(end,1) = trim(mio_file_data(floc)%var_name(v)) // tname
 !             end do
-
+!
 #else
              do v = 1, nvars3d
                 end = end + 1
@@ -1077,7 +1077,7 @@
 !             file_tstep(f_ltng) = tstep3d
 !             file_xcell(f_ltng) = xcell3d
 !             file_ycell(f_ltng) = ycell3d
-!
+
 !             n_l2d = nvars3d
 !             cio_LTLYRS = nlays3d
 !             allocate (l2d_name(n_l2d, 3), stat=stat)
@@ -1095,7 +1095,7 @@
 !             else
 !              lt_name = 'LNT'
 !             end if
-!
+
 !          end if
 #endif
 
@@ -1107,7 +1107,7 @@
 !          cro_nrows = 1
 !          size_c2dx = 1
 
-!! for standard domain
+! for standard domain
 !          s_cro_ncols = ncols
 !          s_cro_nrows = 1
 #else
@@ -1196,20 +1196,20 @@
 !          begin = end + 1
 !          end = end + n_i3d
 !          cio_grid_var_name(begin:end, :) = i3d_name
-!
+
 !          if (ISAM_NEW_START == 'N') then
 !             begin = end + 1
 !             end = end + n_is3d
 !             cio_grid_var_name(begin:end, :) = is3d_name
 !          end if
-!
+
 !          if (NLDNSTRIKE) then
 !             begin = end + 1
 !             end = end + n_l2d
 !             cio_grid_var_name(begin:end, :) = l2d_name
 !             deallocate (l2d_name)
 !          end if
-!
+
 !          deallocate (c2d_name, c3d_name, i3d_name)
 !          if (ISAM_NEW_START == 'N') then
 !             deallocate (is3d_name)
@@ -1273,11 +1273,11 @@
           USE VGRD_DEFN, ONLY : NLAYS
           USE CGRID_SPCS
           use get_env_module
-#ifdef mpas  !(Wei Li)
+#ifdef mpas
 !          use mio_module
 !          use util_module, only : nextime
 !          use mio_util_func_module, only : mpas_nextime
-!          use coupler_module, only : cell_area
+!          use coupler_module, only : cell_area 
 !          use centralized_io_util_module, only : julian_to_mpas_date_time, binary_search
 #else
           use centralized_io_util_module, only : binary_search
@@ -1319,16 +1319,16 @@
 
 #ifdef mpas
 !             allocate (mpas_loc_time_stamp(n_opened_file), STAT=STAT)
-!
+
 !             do k = 1, N_FILE_GR
 !                write (fname, '(a8, i3.3)') "GR_EMIS_", k
 !                i = search_fname (fname)
 !                mpas_loc_time_stamp(f_emis(k)) = mio_file_data(i)%timestamp(1)
 !             end do
-!
+
 !             pre_jdate = -1
 !             pre_jtime = -1
-!
+
 !             call get_env (exception1, 'exception1', ' ')
 !             call get_env (exception2, 'exception2', ' ')
 
@@ -1388,7 +1388,7 @@
 #ifndef mpas
 !                   data_jdate = loc_jdate(f_met)
 !                   data_jtime = loc_jtime(f_met)
-!
+
 !                   if ((cio_grid_var_name(v,1) .ne. 'TSEASFC') .or.  TSEASFC_AVAIL) then
 #ifdef twoway
                       IF ( .NOT. INTERPX( MET_CRO_2D, cio_grid_var_name(v,1), PNAME, 
@@ -1492,7 +1492,7 @@
 !                         do k = 1, num_dist_layers(i,fnum)
 !                            mpas_tdata(i,k) = temp_data_1d(i) * dist_frac(k,i,fnum)
 !                         end do
-!                      end do
+!                     end do
 !                   else
 !                      do i = 1, ncols
 !                         do k = 1, num_dist_layers(i,fnum)
@@ -1500,11 +1500,11 @@
 !                         end do
 !                      end do
 !                   end if
-!
-!!                  do i = 1, ncols
-!!                     mpas_tdata(i,:) = mpas_tdata(i,:) * cell_area(i,1)
-!!                  end do
-!
+
+!                  do i = 1, ncols
+!                     mpas_tdata(i,:) = mpas_tdata(i,:) * cell_area(i,1)
+!                  end do
+
 !                   cio_grid_data(begin:end) = reshape(mpas_tdata, (/ end-begin+1 /))
 
 #else
@@ -1512,7 +1512,9 @@
                    ! Check if its a representative day on start-up (every other time it will
                    ! be managed by the emissions processing) 
                    if (firstime) then  
-                     if (file_sym_date(f_emis(fnum))) loc_jdate(f_emis(fnum)) = file_sdate(f_emis(fnum))
+                     if (file_sym_date(f_emis(fnum))) then 
+                         loc_jdate(f_emis(fnum)) = file_sdate(f_emis(fnum))
+                     end if
                    end if
                    data_jdate = loc_jdate(f_emis(fnum))
                    data_jtime = loc_jtime(f_emis(fnum))
@@ -1540,9 +1542,9 @@
 !     &                          temp_data_1d(ncols),
 !     &                          stat=stat)
 !                   end if
-!
+
 !                   file_tstep(f_emis(fnum)) = mio_file_data(floc)%tstep
-!
+
 !                   ! Check if its a representative day on start-up (every other
 !                   ! time it will be managed by the emissions processing)
 !                   if (firstime) then
@@ -1550,18 +1552,18 @@
 !                   end if
 !                   data_jdate = loc_jdate(f_emis(fnum))
 !                   data_jtime = loc_jtime(f_emis(fnum))
-!
+
 !                   call julian_to_mpas_date_time (data_jdate, data_jtime, loc_mpas_time_stamp)
-!
+
 !                   call mio_fread (cio_emis_file_name(fnum),
 !     &                             loc_vname,
 !     &                             temp_data_1d,
 !     &                             loc_mpas_time_stamp)
-!
+
 !                   cio_mpas_grid_data_tstamp(buf_loc, v) = loc_mpas_time_stamp
-!
+
 !                   call mpas_date_time_to_julian (loc_mpas_time_stamp, data_jdate, data_jtime)
-!
+
 !! de-normalized the data 
 !                   mpas_tdata = 0.0
 !                   do i = 1, ncols
@@ -1569,7 +1571,7 @@
 !                         mpas_tdata(i,k) = temp_data_1d(i) * dist_frac(k,i,fnum)
 !                      end do
 !                   end do
-!
+
 !                   t_beg = begin
 !                   t_end = begin + ncols - 1
 !                   do k = 1, nlays
@@ -1603,9 +1605,9 @@
 #ifndef mpas
 !                      data_jdate = loc_jdate(f_icon)
 !                      data_jtime = loc_jtime(f_icon)
-!
+
 !                   if (iter == 1) then
-!                   
+                   
 !                      IF ( .NOT. XTRACT3( ICFILE, cio_grid_var_name(v,1),
 !     &                                    1, nlays, STRTROWIC, ENDROWIC, STRTCOLIC, ENDCOLIC, 
 !     &                                    data_jdate, data_jtime, cio_grid_data(begin:end) ) ) THEN
@@ -1620,9 +1622,9 @@
 #ifndef mpas
 !                      data_jdate = loc_jdate(f_is_icon)
 !                      data_jtime = loc_jtime(f_is_icon)
-!
+
 !                   if ((iter == 1) .and. (ISAM_NEW_START == 'N')) then
-!                      
+                      
 !                      IF ( .NOT. XTRACT3( ISAM_PREVDAY, cio_grid_var_name(v,1),
 !     &                                    1, nlays, STRTROWISIC, ENDROWISIC, STRTCOLISIC, ENDCOLISIC, 
 !     &                                    data_jdate, data_jtime, cio_grid_data(begin:end) ) ) THEN
@@ -1637,7 +1639,7 @@
 #ifndef mpas
 !                   data_jdate = loc_jdate(f_ltng)
 !                   data_jtime = loc_jtime(f_ltng)
-!
+
 !                   IF ( .NOT. XTRACT3( NLDN_STRIKES, cio_grid_var_name(v,1), 
 !     &                                 1, cio_LTLYRS, STRTROWLNT, ENDROWLNT, STRTCOLLNT, ENDCOLLNT, 
 !     &                                 data_jdate, data_jtime, cio_grid_data(begin:end) ) ) THEN
@@ -1661,7 +1663,7 @@
 !                j     = cio_grid_data_inx(2,buf_loc,tseasfc_loc)
 !                cio_grid_data(i:j) = cio_grid_data(begin:end)
 !             end if
-!
+
 !             CALL NEXTIME ( loc_jdate(f_met), loc_jtime(f_met), file_tstep(f_met) )
 !             if (NLDNSTRIKE) then
 !                 CALL NEXTIME ( loc_jdate(f_ltng), loc_jtime(f_ltng), file_tstep(f_ltng) )
@@ -1740,24 +1742,24 @@
 #ifdef mpas
 ! -------------------------------------------------------------------------
 !        subroutine stack_files_setup_mpas
-!
-!!         USE UTILIO_DEFN
+
+!         USE UTILIO_DEFN
 !          use stk_prms
 !          use stack_group_data_module
 !          use get_env_module
 !          use hgrd_defn, only : ncols, mype
 !          use vgrd_defn, only : nlays
-!         !use coupler_module, only : pres_ind, g3ddata !(Wei Li)
+         ! use coupler_module, only : pres_ind, g3ddata (beiming tang)
 !          use centralized_io_util_module, only : quicksort
-!         !use util_module, only : index1               !(Wei Li)
+!          use util_module, only : index1
 !          use RUNTIME_VARS, only : emis_sym_date
-!
-!         !use mydata_module  !(Wei Li)
-!
+
+!          use mydata_module
+
 !          include SUBST_FILES_ID             ! file name parameters
-!
+
 !          character( 40 ), parameter :: pname = 'stack_files_setup_mpas'
-!
+
 !          character( 120 ) :: xmsg = ' '
 !          character( 500 ) :: map_fname, fname
 !          integer :: n, v, pt, max_nsrc_pts, max_nvars, begin, end, stat, delta,
@@ -1767,10 +1769,10 @@
 !     &                            stk_gp_nlays(:), mpas_map(:), my_mpas_map_index(:),
 !     &                            tdata_1di(:)
 !          real, allocatable :: tdata_1dr(:)
-!
+
 !          call get_env (map_fname, 'mpas_dmap_file', ' ')
 !          call get_env (num_mesh_points, 'num_mesh_points', 1)
-!
+
 !          allocate (cio_stack_file_name(nptgrps),
 !     &              cio_stack_file_loc(nptgrps),
 !     &              n_cio_stack_emis_vars(nptgrps),
@@ -1795,7 +1797,7 @@
 !               xmsg = 'Failure allocating cio_stack_file_name and other arrays'
 !               call prog_interrupt (pname, 0, 0, xmsg, 1)
 !          end if
-!
+
 !          my_data = .false.
 !          my_cell_num = -1
 !          open (unit = 97, file = map_fname, status = 'old')
@@ -1815,150 +1817,150 @@
 !             end if
 !          end do
 !          close (97)
-!
+
 !          fire_on = .false.   ! array assignment
 !! go through all stack group one time to figure out max number of source points
 !          stkgname = ' '   ! array
 !          do n = 1, nptgrps
 !             write( stkgname( n ),'( "STK_GRPS_",I3.3 )' ) n
 !          end do
-!
+
 !          if ( .not. stk_prms_init( stkgname ) ) then
 !             write (cio_logdev, *) 'Could not initialize stack parameters'
 !             stop
 !          end if
-!
+
 !          do n = 1, nptgrps
-!
+
 !             floc = search_fname(stkgname(n))
-!
+
 !!            stk_gp_sdate(n) = mio_file_data(floc)%var_name(ivar)
 !!            stk_gp_stime(n) = mio_file_data(floc)%var_name(ivar)
 !             stk_gp_nlays(n) = mio_file_data(floc)%dim_len(3)
-!
+
 !             nsrc( n ) = mio_file_data(floc)%dim_len(5)
-!
+
 !             do v = 1, mio_file_data(floc)%nvars
 !                if ( mio_file_data(floc)%var_name(v) .eq. 'ACRESBURNED' ) fire_on( n ) = .true.
 !             end do
 !          end do
 !          max_nsrc_pts = maxval(nsrc)
-!
+
 !          allocate (stkid(max_nsrc_pts, nptgrps),
 !     &              stat = stat)
 !          if (stat .ne. 0) then
 !             xmsg = 'Failure allocating other stack group variable arrays'
 !             call prog_interrupt (pname, cio_model_sdate, cio_model_stime, xmsg, 1)
 !          end if
-!
+
 !! read in stack group data
-!
+
 !          do n = 1, nptgrps
-!
+
 !             allocate (tdata_1di(nsrc(n)), stat = stat)
-!
+
 !             call mio_fread (stkgname(n), 'ROW', tdata_1di)
-!
+
 !             my_nsrc(n) = 0
 !             do v = 1, nsrc(n)
 !                pt = index1 (tdata_1di(v), my_num_mesh_points, my_mpas_map_index)
-!
+
 !                if (pt .gt. 0) then
 !                   my_nsrc(n) = my_nsrc(n) + 1
 !                   my_nsrc_index(my_nsrc(n), n) = v
 !                   my_nsrc_mesh_index(my_nsrc(n), n) = pt
 !                end if
 !             end do
-!
+
 !             deallocate (tdata_1di)
-!
+
 !          end do
-!
+
 !          my_strt_src = 0
 !          do n = 1, nptgrps
-!
+
 !             if ( my_nsrc( n ) .gt. 0 ) then
-!
+
 !                my_strt_src(n) = 1
 !                my_end_src(n) = my_nsrc(n)
-!
+
 !                stkdiam(n)%len = my_nsrc(n)
 !                stkht(n)%len   = my_nsrc(n)
 !                stktk(n)%len   = my_nsrc(n)
 !                stkvel(n)%len  = my_nsrc(n)
-!
+
 !                allocate (stkdiam(n)%arry(my_nsrc(n)), 
 !     &                    stkht(n)%arry(my_nsrc(n)), 
 !     &                    stktk(n)%arry(my_nsrc(n)), 
 !     &                    stkvel(n)%arry(my_nsrc(n)), 
 !     &                    tdata_1dr(nsrc(n)),
 !     &                    stat=stat )
-!
+
 !                if ( fire_on(n) ) then
 !                   acres_burned(n)%len = my_nsrc(n)
 !                   allocate (acres_burned(n)%arry(my_nsrc(n)), 
 !     &                       stat=stat )
 !                end if
-!
+
 !                call mio_fread (stkgname(n), 'STKDM', tdata_1dr)
-!
+
 !                do v = 1, my_nsrc(n)
 !                   stkdiam( n )%arry(v) = tdata_1dr(my_nsrc_index(v, n))
 !                   my_nsrc_pressure(:,v,n) = g3ddata(my_nsrc_mesh_index(v, n),1,:,pres_ind)
 !                end do
-!
+
 !                call mio_fread (stkgname(n), 'STKHT', tdata_1dr)
-!
+
 !                do v = 1, my_nsrc(n)
 !                   stkht( n )%arry(v) = tdata_1dr(my_nsrc_index(v, n))
 !                end do
-!
+
 !                call mio_fread (stkgname(n), 'STKTK', tdata_1dr)
-!
+
 !                do v = 1, my_nsrc(n)
 !                   stktk( n )%arry(v) = tdata_1dr(my_nsrc_index(v, n))
 !                end do
-!
+
 !                call mio_fread (stkgname(n), 'STKVE', tdata_1dr)
-!
+
 !                do v = 1, my_nsrc(n)
 !                   stkvel( n )%arry(v) = tdata_1dr(my_nsrc_index(v, n))
 !                end do
-!
+
 !                if ( fire_on( n ) ) then
 !                   call mio_fread (stkgname(n), 'ACRESBURNED', tdata_1dr)
-!
+
 !                   do v = 1, my_nsrc(n)
 !                      acres_burned( n )%arry(v) = tdata_1dr(my_nsrc_index(v, n))
 !                   end do
-!
+
 !                end if
-!
+
 !                deallocate (tdata_1dr)
 !             end if
-!
+
 !          end do
-!
+
 !! process stack emission files
 !          max_nvars = 0
 !          d_size    = 0
 !          do pt = 1, nptgrps
-!
+
 !             write( cio_stack_file_name(pt), '( "STK_EMIS_",I3.3 )' ) pt
-!
+
 !             floc = search_fname(cio_stack_file_name(pt))
 !             cio_stack_file_loc(pt) = floc
-!
+
 !             n_cio_stack_emis_vars(pt) = mio_file_data(floc)%nvars
 !             n_cio_stack_emis_lays(pt) = mio_file_data(floc)%nlays
 !             n_cio_stack_emis_pts(pt)  = nsrc( pt )
-!
+
 !             cio_mpas_stack_emis_timestamp(pt) = mio_file_data(floc)%timestamp(1)
-!
+
 !             if (max_nvars .lt. mio_file_data(floc)%nvars) then
 !                max_nvars = mio_file_data(floc)%nvars
 !             end if
-!
+
 !             if (my_strt_src(pt) .gt. 0) then
 !                pt_size(pt) = (my_end_src(pt) - my_strt_src(pt) + 1) * n_cio_stack_emis_lays(pt)
 !                d_size(pt)  = mio_file_data(floc)%nvars * pt_size(pt) * 3
@@ -1966,9 +1968,9 @@
 !                pt_size(pt) = 0
 !                d_size(pt)  = 0
 !             end if
-!
+
 !          end do
-!
+
 !          allocate (cio_stack_var_name(max_nvars, nptgrps),
 !     &              head_stack_emis(max_nvars, nptgrps),
 !     &              tail_stack_emis(max_nvars, nptgrps),
@@ -1981,32 +1983,32 @@
 !               xmsg = 'Failure allocating other stack arrays'
 !               call prog_interrupt (pname, 0, 0, xmsg, 1)
 !          end if
-!
+
 !          begin = 1
 !          cio_stack_emis_data_inx = -1
 !          do pt = 1, nptgrps
-!
+
 !             floc = cio_stack_file_loc(pt)
-!
+
 !             n_opened_file = n_opened_file + 1
 !             f_stk_emis(pt) = n_opened_file
-!
+
 !! Check whether file is a representative day type
-!             write (fname, '(a16, i3.3)') "STK_EM_SYM_DATE_", pt
+!            write (fname, '(a16, i3.3)') "STK_EM_SYM_DATE_", pt
 !             file_sym_date(f_stk_emis(pt)) = emis_sym_date ! Master switch to change default
 !             call get_env(file_sym_date(f_stk_emis(pt)), fname,
 !     &                    file_sym_date(f_stk_emis(pt)), logdev)
-!
+
 !             file_sdate(f_stk_emis(pt)) = mio_file_data(floc)%tflag(1,1)
 !             file_stime(f_stk_emis(pt)) = mio_file_data(floc)%tflag(2,1)
 !             file_tstep(f_stk_emis(pt)) = mio_file_data(floc)%tstep
-!
+
 !             t_nvars = mio_file_data(floc)%nvars
-!
+
 !             cio_stack_var_name(1:t_nvars, pt) = mio_file_data(floc)%var_name(1:t_nvars)
-!
+
 !             call quicksort(cio_stack_var_name(1:t_nvars,pt), 1, t_nvars)
-!
+
 !             if (my_nsrc(pt) .gt. 0) then
 !                do v = 1, mio_file_data(floc)%nvars
 !                   do n = 0, 2
@@ -2018,27 +2020,27 @@
 !                end do
 !             end if
 !          end do
-!
+
 !          deallocate (d_size)
-!
+
 !        end subroutine stack_files_setup_mpas
-!
-!! -------------------------------------------------------------------------
+
+! -------------------------------------------------------------------------
 !        subroutine retrieve_stack_data_mpas (jdate, jtime, fname, vname)
-!
-!!         USE UTILIO_DEFN
+
+!         USE UTILIO_DEFN
 !          use stk_prms, only : my_strt_src, my_end_src, my_nsrc, my_nsrc_index
 !          use stack_group_data_module, only : nsrc
 !          use util_module, only : NEXTIME
 !          use centralized_io_util_module, only : julian_to_mpas_date_time, binary_search
-!
+
 !          include SUBST_FILES_ID             ! file name parameters
-!
+
 !          integer, intent(in) :: jdate, jtime
 !          character (*), intent(in), optional :: fname, vname
-!
+
 !          character( 40 ), parameter :: pname = 'retrieve_stack_data_mpas'
-!
+
 !          logical, save :: firstime = .true.
 !          integer :: stat, i, j, begin, end, buf_loc, iterations,
 !     &               iter, loc_jdate, loc_jtime, v, beg_v, end_v,
@@ -2046,26 +2048,26 @@
 !          real, allocatable :: tdata_1dr(:)
 !          character (20) :: mpas_time_stamp
 !          character (20), allocatable, save :: mpas_stack_loc_time_stamp(:)
-!
+
 !          character( 120 ) :: xmsg = ' '
-!
+
 !          if (firstime) then
-!
+
 !             allocate (mpas_stack_loc_time_stamp(nptgrps), stat=stat)
-!
+
 !             do i = 1, nptgrps
 !                j = search_fname (cio_stack_file_name(i))
 !                mpas_stack_loc_time_stamp(i) = mio_file_data(j)%timestamp(1)
 !             end do
-!
+
 !             head_stack_emis = -1
 !             tail_stack_emis = -1
-!
+
 !             iterations = 2
 !          else
 !             iterations = 1
 !          end if
-!
+
 !          if (present(vname)) then
 !             beg_gp = binary_search (fname, cio_stack_file_name, nptgrps)
 !             end_gp = beg_gp
@@ -2075,11 +2077,11 @@
 !             beg_gp = 1
 !             end_gp = nptgrps
 !          end if
-!
+
 !          do gp = beg_gp, end_gp
-!
+
 !             allocate (tdata_1dr(nsrc(gp)), stat = stat)
-!
+
 !             if (firstime) then
 !                loc_jdate = jdate
 !                if (file_sym_date(f_stk_emis(gp))) loc_jdate = file_sdate(f_stk_emis(gp)) ! Representative day check
@@ -2088,48 +2090,48 @@
 !                loc_jdate = jdate
 !                loc_jtime = jtime
 !             end if
-!
+
 !             if (.not. present(vname)) then
 !                beg_v = 1
 !                end_v = n_cio_stack_emis_vars(gp)
 !             end if
-!
-!! cio_stack_emis_data_inx
-!
+
+! cio_stack_emis_data_inx
+
 !             do iter = 1, iterations
-!
+
 !                call julian_to_mpas_date_time (loc_jdate, loc_jtime, mpas_time_stamp)
-!
+
 !                do v = beg_v, end_v
 !                   buf_loc = mod((tail_stack_emis(v, gp) + iter), 2)
-!
+
 !                   cio_stack_emis_data_tstamp(1, buf_loc, v, gp) = loc_jdate
 !                   cio_stack_emis_data_tstamp(2, buf_loc, v, gp) = loc_jtime
-!
+
 !                   begin = cio_stack_emis_data_inx(1, buf_loc, v, gp)
 !                   end   = cio_stack_emis_data_inx(2, buf_loc, v, gp)
-!
+
 !                   if ((begin .gt. 0) .and. (my_nsrc(gp) .gt. 0)) then
-!
+
 !                      call mio_fread (cio_stack_file_name(gp),
 !     &                                cio_stack_var_name(v, gp), 
 !     &                                tdata_1dr,
 !     &                                mpas_time_stamp)
-!
+
 !                      do i = 1, my_nsrc(gp)
 !                         cio_stack_data(begin+i-1) = tdata_1dr(my_nsrc_index(i, gp))
 !                      end do
 !                   end if
 !                end do
-!
+
 !                call nextime ( loc_jdate, loc_jtime, file_tstep(f_stk_emis(gp)) )
-!
+
 !             end do  ! end iter
-!
+
 !             deallocate (tdata_1dr)
-!
+
 !          end do
-!
+
 !          if (firstime) then
 !             firstime = .false.
 !             head_stack_emis = 0
@@ -2142,30 +2144,30 @@
 !                end do
 !             end do
 !          end if
-!
+
 !        end subroutine retrieve_stack_data_mpas
-!
-!! -------------------------------------------------------------------------
+
+! -------------------------------------------------------------------------
 !        subroutine retrieve_ocean_data_mpas
-!
+
 !          USE HGRD_DEFN
 !          USE mio_module, only : search_fname
-!
+
 !          character (20)   :: ocean_file = 'OCEAN_1'
 !          character (120)  :: xmsg = ' '
 !          character (1000) :: fname
 !          integer          :: floc
 !          logical          :: exist
-!
+
 !          call get_env (fname, ocean_file, ' ')
 !          inquire (file=fname, exist=exist)
-!
+
 !          if (exist) then
 !             floc = search_fname (ocean_file)
 !          end if
-!
+
 !          if (ocean_chem) then
-!
+
 !! if OCEAN file does not exist, g2ddata with open_ind and surf_ind have
 !! been setup in subroutne mpas_cmaq_coupler, mpas_atmchem_interface.F
 !             if (exist) then
@@ -2173,12 +2175,12 @@
 !     &                          'OPEN',
 !     &                          g2ddata(:, 1, open_ind),
 !     &                          mio_file_data(floc)%timestamp(1))
-!
+
 !                call mio_fread (ocean_file,
 !     &                          'SURF',
 !     &                          g2ddata(:, 1, surf_ind),
 !     &                          mio_file_data(floc)%timestamp(1))         
-!
+
 !                call mio_fread (ocean_file,
 !     &                          'CHLO',
 !     &                           g2ddata(:, 1, chlo_ind),
@@ -2193,9 +2195,9 @@
 !                end if
 !             end if
 !          end if
-!
+
 !        end subroutine retrieve_ocean_data_mpas
-!
+
 #else
 
 ! -------------------------------------------------------------------------
@@ -4091,17 +4093,17 @@ C Read the various categories of normalized emissions
 !               call m3exit ( pname, 0, 0, xmsg, xstat1 )
 !            end if
 !            n_opened_file = n_opened_file + 1
-!
+
 !            ! Retrieve domain decomposition offsets for first lufile 
 !            call subhfile( lufile( 1 ), gxoff1, gyoff1, strtcol1, 
 !     &                     endcol1, strtrow1, endrow1 )   
-! 
-!          
+ 
+          
 !          end if
 
 #endif
 
-    ! determine land_scheme from GRID_CRO_2D
+! determine land_scheme from GRID_CRO_2D
 
 #ifdef twoway
 
@@ -4151,11 +4153,11 @@ C   mminlu and num_land_cat are WRF global variables
              end select
 
 #else
-#ifdef mpas
+!#ifdef mpas
 !             dust_land_scheme = mminlu_mpas
-#else
+!#else
              dust_land_scheme = cio_dust_land_scheme ! land scheme found from grid_cro_2D 'DLUSE' var-desc
-#endif
+!#endif
 #endif
 
           select case( dust_land_scheme ) ! After land scheme is determined allocate number of land use categories & number of dustland categories from lus_data_module
@@ -4270,14 +4272,14 @@ C   mminlu and num_land_cat are WRF global variables
 
           if ( .not. lucro_avail ) then ! TRUE if LUFRAC file isn't there or the land scheme is beld
 
-#ifdef mpas
+!#ifdef mpas
 !            do i = 1, n_dlcat  ! Loop through the number of desertland categories and fill in ladut array
 !               ladut( :,:,i) = lufrac( :,:,vnmld( i )%lu_idx ) ! Use mapped index in LUFRAC from lus_data_module to fill in ladut
 !            end do
-!
+
 !            lut = lufrac ! landuse category fraction is lufrac that is already been extracted
 
-#else
+!#else
 ! Get desert land (fraction) data (assume if BELD, all desert types are in file 1)
             do i = 1, n_dlcat
 #ifdef twoway
@@ -4296,7 +4298,7 @@ C   mminlu and num_land_cat are WRF global variables
      &                 // ' from ' // trim( lufile( 1 ) )
                   call m3exit( pname, cio_model_sdate, cio_model_stime, xmsg, xstat1 )
                end if
-#endif  
+!#endif  
             end do
 
 ! Get land  use (fraction) data
@@ -4693,7 +4695,7 @@ C   mminlu and num_land_cat are WRF global variables
         subroutine centralized_io_init (in_ncols)
 
           use lsm_mod, only: n_lufrac, init_lsm
-          USE UTILIO_DEFN ! (Wei Li) , only : m3exit
+          USE UTILIO_DEFN !, only : M3EXIT (this is interesting,beiming)
           USE RUNTIME_VARS, only: log_heading, logdev
 
 #ifdef mpas
@@ -4725,20 +4727,20 @@ C   mminlu and num_land_cat are WRF global variables
 !             call gridded_files_setup
 !
 !             call retrieve_lufrac_cro_data
-!
+
 !             if (wb_dust) then
 !                call lus_setup
 !             end if
-!
-!!            cio_logdev = 6
-!
+
+!            cio_logdev = 6
+
 !             if ( WB_DUST ) then
 !                if (.not. lus_init (mminlu_mpas, lufrac_data) ) then
 !                   print *, ' Error: Cannot initialize Land Use category'
 !                   stop
 !                end if
 !             end if
-!
+
 !             allocate (lwmask(in_ncols, 1),
 !     &                 lat(in_ncols, 1),
 !     &                 lon(in_ncols, 1),
@@ -4746,26 +4748,26 @@ C   mminlu and num_land_cat are WRF global variables
 !     &                 ocean(in_ncols, 1),
 !     &                 szone(in_ncols, 1),
 !     &                 stat=stat)
-!
+
 !             lon    = g2ddata(:,:,lon_ind)
 !             lat    = g2ddata(:,:,lat_ind)
 !             ht     = g2ddata(:,:,ht_ind)
 !             lwmask = g2ddata(:,:,lwmask_ind)
-!
+
 !             call retrieve_ocean_data_mpas
-!
+
 !             if (ocean_chem) then
 !                ocean = g2ddata(:,:,open_ind)
 !                szone = g2ddata(:,:,surf_ind)
 !                dmsl = g2ddata(:,:,dms_ind)
 !                chlr = g2ddata(:,:,chlo_ind)
 !             end if
-!
+
 !             cio_model_sdate = stdate
 !             cio_model_stime = sttime
-!
+
 !             call stack_files_setup_mpas
-!
+
 #else
              cio_logdev = init3()
 
@@ -4857,13 +4859,13 @@ C   mminlu and num_land_cat are WRF global variables
 
           call retrieve_time_dep_gridded_data (cio_model_sdate, cio_model_stime)
 
-#ifdef mpas
+!#ifdef mpas
 !          call retrieve_stack_data_mpas (cio_model_sdate, cio_model_stime)
-#else
+!#else
           call retrieve_boundary_data (cio_model_sdate, cio_model_stime)
 
           call retrieve_stack_data (cio_model_sdate, cio_model_stime)
-#endif
+!#endif
 
         end subroutine centralized_io_init
  
@@ -4881,10 +4883,10 @@ C   mminlu and num_land_cat are WRF global variables
       USE UTILIO_DEFN
       USE desid_param_module
       USE UTIL_FAMILY_MODULE
-#ifdef mpas
+!#ifdef mpas
 !      USE util_module, only : index1, upcase
 
-#endif
+!#endif
 
 #ifdef parallel
       USE SE_MODULES   ! stenex (using SE_UTIL_MODULE,SE_DATA_COPY_MODULE)
@@ -4963,12 +4965,12 @@ C   mminlu and num_land_cat are WRF global variables
         DO IFILE = 1,NFILE
           IF ( FILENAMES( IFILE ) .EQ. 'N/A' ) CYCLE
          
-#ifdef mpas
+!#ifdef mpas
 !          floc = search_fname (filenames( ifile ))
 
 !          ldate = 0
 !          ltime = 0
-#else
+!#else
           ! Get domain decomp info from the emissions file
           CALL SUBHFILE ( FILENAMES( IFILE ), GXOFF, GYOFF,
      &                    STARTCOL, ENDCOL, STARTROW, ENDROW )
@@ -4986,7 +4988,7 @@ C   mminlu and num_land_cat are WRF global variables
              CALL M3EXIT( PNAME, STDATE, STTIME, XMSG, XSTAT1 )
           END IF
          
-#endif
+!#endif
 
           ! Read data from regions file into region array 
           DO IREAD = 1,N_REG_RULE
@@ -5001,7 +5003,7 @@ C   mminlu and num_land_cat are WRF global variables
                         CALL M3EXIT( PNAME, STDATE, STTIME, XMSG, XSTAT1 )
                      ELSE   
 !#ifdef mpas
-!                       DO IVAR = 1, cio_emis_nvars(ifile)
+!                        DO IVAR = 1, cio_emis_nvars(ifile)
 !                           lvname = mio_file_data(floc)%var_name(ivar)
 !#else
                         DO IVAR = 1,NVARS3D
@@ -5062,13 +5064,13 @@ C   mminlu and num_land_cat are WRF global variables
               END IF
           END DO
 
-#ifndef mpas
+!#ifndef mpas
 !          ! Close Regions File
 !          IF ( .NOT. CLOSE3( FILENAMES( IFILE ) ) ) THEN
 !            XMSG = 'Could not close ' // FILENAMES( IFILE )
 !            CALL M3EXIT( PNAME, SDATE3D, STIME3D, XMSG, XSTAT1 )
 !          END IF
-#endif
+!#endif
          
           ! Error Check the Regions Array
           ! Any Negatives?
@@ -5206,9 +5208,9 @@ C   mminlu and num_land_cat are WRF global variables
       use RUNTIME_VARS, only: MISC_CTRL, DESID_CTRL, DESID_CHEM_CTRL,
      &                        logdev, log_message, log_subheading
       use PA_DEFN, ONLY : BudgetVariables, MAX_BUDGET_VARS_NML, BUDGET_DIAG
-#ifdef mpas
+!#ifdef mpas
 !      use util_module, only : junit, upcase
-#endif
+!#endif
 
       IMPLICIT NONE
 
@@ -5726,45 +5728,45 @@ C   mminlu and num_land_cat are WRF global variables
 
       END SUBROUTINE DESID_READ_NAMELIST  
 
-!#ifdef mpas
-! -------------------------------------------------------------------------
+#ifdef mpas
+!!! -------------------------------------------------------------------------
 !        subroutine r_interpolate_var_1d (vname, date, time, data)
-!
+
 !          use hgrd_defn, only : ncols, nrows
 !          use vgrd_defn, only : nlays
 !          USE UTILIO_DEFN
 !          use centralized_io_util_module, only : binary_search
-!
+
 !          character (*), intent(in) :: vname
 !          integer, intent(in)       :: date, time
 !          real, intent(out)         :: data(:)
-!
+
 !          integer :: var_loc
 !          character (40) :: msg
-!
+
 !          var_loc = binary_search (vname, vname_2d, n2d_data)
-!
+
 !          if (var_loc .gt. 0) then
 !             data = g2ddata(:,1,var_loc)
 !          else
 !             write (msg, *) ' Error: Cannot find species ', trim(vname)
 !             call prog_interrupt ( 'interpolate_var', 0, 0, msg, 1)
 !          end if
-!
+
 !        end subroutine r_interpolate_var_1d
-!
+
 !! -------------------------------------------------------------------------
 !        subroutine r_interpolate_var_1ds (fname, vname, date, time, data)
-!
+
 !          use stk_prms, only : my_strt_src, my_end_src, my_nsrc
 !          use util_module, only : nextime, secsdiff
 !          use centralized_io_util_module, only : binary_search
 !          use util_module, only : time2sec
-!
+
 !          character (*), intent(in) :: fname, vname
 !          integer, intent(in)       :: date, time
 !          real, intent(out)         :: data(:)
-!
+
 !          integer :: head_beg_ind, head_end_ind,
 !     &               tail_beg_ind, tail_end_ind,
 !     &               store_beg_ind, store_end_ind,
@@ -5776,11 +5778,11 @@ C   mminlu and num_land_cat are WRF global variables
 !          integer, save :: lcount = 0
 !          real, save :: ratio1, ratio2
 !          character(200) :: xmsg
-!
+
 !          pt = binary_search (fname, cio_stack_file_name, NPTGRPS)
-!
+
 !          var_loc = binary_search (vname, cio_stack_var_name(:,pt), n_cio_stack_emis_vars(pt))
-!
+
 !          if (var_loc .lt. 0) then
 !             write (cio_logdev, '(a9, a, a33)') 'Warning: ', trim(vname), ' is not available in a stack file.'
 !             write (xmsg, '(A9,A,A,A)' ) 'ERROR: ',trim(vname), ' is not available ',
@@ -5788,18 +5790,18 @@ C   mminlu and num_land_cat are WRF global variables
 !             call m3exit ( 'Centralized I/O Module', date, time, xmsg, 1 )
 !          else
 !             dsize = my_nsrc(pt)
-!
+
 !             loc_tstep = file_tstep(f_stk_emis(pt)) 
-!
+
 !             loc_head = head_stack_emis(var_loc, pt)
 !             loc_tail = tail_stack_emis(var_loc, pt)
-!
+
 !             if ((cio_stack_emis_data_tstamp(1, loc_tail, var_loc, pt) .lt. date) .or.
-!!     &           ((cio_stack_emis_data_tstamp(1, loc_tail, var_loc, pt) .eq. date) .and.
-!!     &            (cio_stack_emis_data_tstamp(2, loc_tail, var_loc, pt) .eq. 0)) .or.
+!     &           ((cio_stack_emis_data_tstamp(1, loc_tail, var_loc, pt) .eq. date) .and.
+!     &            (cio_stack_emis_data_tstamp(2, loc_tail, var_loc, pt) .eq. 0)) .or.
 !     &           ((cio_stack_emis_data_tstamp(2, loc_tail, var_loc, pt) .lt. time) .and.
 !     &            (cio_stack_emis_data_tstamp(1, loc_tail, var_loc, pt) .eq. date))) then
-!
+
 !                loc_jdate = cio_stack_emis_data_tstamp(1, loc_tail, var_loc, pt)
 !                loc_jtime = cio_stack_emis_data_tstamp(2, loc_tail, var_loc, pt) 
 !                CALL NEXTIME ( loc_jdate, loc_jtime, loc_tstep )
@@ -5807,19 +5809,19 @@ C   mminlu and num_land_cat are WRF global variables
 !                loc_head = head_stack_emis(var_loc, pt)
 !                loc_tail = tail_stack_emis(var_loc, pt)
 !             end if
-!
+
 !             if ((cio_stack_emis_data_tstamp(1, 2, var_loc, pt) .eq. date) .and.
 !     &           (cio_stack_emis_data_tstamp(2, 2, var_loc, pt) .eq. time)) then
 !                count = count + 1
 !             else
-!
+
 !                cio_stack_emis_data_tstamp(1, 2, var_loc, pt) = date
 !                cio_stack_emis_data_tstamp(2, 2, var_loc, pt) = time
-!
+
 !                if ((prev_time .ne. time) .or.
 !     &              (prev_head_time .ne. cio_stack_emis_data_tstamp(2, loc_head, var_loc, pt)) .or.
 !     &              (prev_tail_time .ne. cio_stack_emis_data_tstamp(2, loc_tail, var_loc, pt))) then
-!
+
 !                   if (cio_stack_emis_data_tstamp(1, loc_head, var_loc, pt) .eq. date) then
 !                      ratio2 =   real(secsdiff(time, cio_stack_emis_data_tstamp(2, loc_head, var_loc, pt))) 
 !     &                         / real(time2sec(loc_tstep))
@@ -5832,16 +5834,16 @@ C   mminlu and num_land_cat are WRF global variables
 !                   prev_time = time
 !                   prev_head_time = cio_stack_emis_data_tstamp(2, loc_head, var_loc, pt)
 !                   prev_tail_time = cio_stack_emis_data_tstamp(2, loc_tail, var_loc, pt)
-!                   
+                   
 !                   if ( (ratio1 .lt. 0) .or. (ratio2 .lt. 0) 
 !     &             .or. (ratio1 .gt. 1) .or. (ratio2 .gt. 1)) then
 !                      write(logdev,'(5X,a,a)'),
 !     &               'ERROR: Incorrect Interpolation in 1-D Stack Interpolation for variable: ',
 !     &                trim(vname)
-!                     
+                     
 !                     write(logdev,'(5X,a,i7,a,i6)'), 
 !     &               'Requested TIME & DATE: ',date,':',time
-!                     
+                     
 !                     write(logdev,'(5X,a,i7,a,i6,a,i7,a,i6)'),
 !     &               'Interpolation Bounds ',cio_stack_emis_data_tstamp(1,0,var_loc,pt),
 !     &               ':',cio_stack_emis_data_tstamp(2,0,var_loc,pt),' to ',
@@ -5853,122 +5855,122 @@ C   mminlu and num_land_cat are WRF global variables
 !                else
 !                   lcount = lcount + 1
 !                end if
-!
+
 !                head_beg_ind  = cio_stack_emis_data_inx(1,loc_head,var_loc, pt)
 !                head_end_ind  = cio_stack_emis_data_inx(2,loc_head,var_loc, pt)
 !                tail_beg_ind  = cio_stack_emis_data_inx(1,loc_tail,var_loc, pt)
 !                tail_end_ind  = cio_stack_emis_data_inx(2,loc_tail,var_loc, pt)
 !                store_beg_ind = cio_stack_emis_data_inx(1,2,var_loc, pt)
 !                store_end_ind = cio_stack_emis_data_inx(2,2,var_loc, pt)
-!
+
 !                cio_stack_data(store_beg_ind:store_end_ind) =   cio_stack_data(head_beg_ind:head_end_ind) * ratio1
 !     &                                                        + cio_stack_data(tail_beg_ind:tail_end_ind) * ratio2
 !
 !             end if
-! 
+ 
 !             store_beg_ind = cio_stack_emis_data_inx(1,2,var_loc, pt)
-!
+
 !             data(1:dsize) = cio_stack_data(store_beg_ind:store_beg_ind+dsize-1)
-!
+
 !          end if
-!
+
 !        end subroutine r_interpolate_var_1ds
-!
-!! -------------------------------------------------------------------------
+
+! -------------------------------------------------------------------------
 !        subroutine r_interpolate_var_2d (vname, date, time, data,
 !     &                                   scol, ecol, srow, erow, slay)
-!
+
 !          use hgrd_defn, only : ncols, nrows
 !          use vgrd_defn, only : nlays
 !          USE UTILIO_DEFN
 !          use centralized_io_util_module, only : binary_search
-!
+
 !          character (*), intent(in) :: vname
 !          integer, intent(in)       :: date, time
 !          real, intent(out)         :: data(:,:)
 !          integer, intent(in), optional :: scol, ecol, srow, erow, slay
-!
+
 !          integer :: var_loc
 !          character (40) :: msg
-!
+
 !          var_loc = binary_search (vname, vname_2d, n2d_data)
-!
+
 !          if (var_loc .gt. 0) then
 !             data = g2ddata(:,:,var_loc)
 !          else
 !             write (msg, *) ' Error: Cannot find species ', trim(vname)
 !             call prog_interrupt ( 'interpolate_var', 0, 0, msg, 1)
 !          end if
-!
+
 !        end subroutine r_interpolate_var_2d
-!
-!! -------------------------------------------------------------------------
+
+! -------------------------------------------------------------------------
 !        subroutine i_interpolate_var_2d (vname, date, time, data)
-!
+
 !          use hgrd_defn, only : ncols, nrows
 !          use vgrd_defn, only : nlays
 !          USE UTILIO_DEFN
 !          use centralized_io_util_module, only : binary_search
-!
+
 !          character (*), intent(in) :: vname
 !          integer, intent(in)       :: date, time
 !          integer, intent(out)      :: data(:,:)
-!
+
 !          integer :: var_loc
 !          character (40) :: msg
-!
+
 !          var_loc = binary_search (vname, vname_2d, n2d_data)
-!
+
 !          if (var_loc .gt. 0) then
 !             data = g2ddata(:,:,var_loc)
 !          else
 !             write (msg, *) ' Error: Cannot find species ', trim(vname)
 !             call prog_interrupt ( 'interpolate_var', 0, 0, msg, 1)
 !          end if
-!
+
 !        end subroutine i_interpolate_var_2d
-!
-!! -------------------------------------------------------------------------
+
+! -------------------------------------------------------------------------
 !        subroutine r_interpolate_var_2dx (vname, date, time, data, flag)
-!
+
 !          use hgrd_defn, only : ncols, nrows
 !          use vgrd_defn, only : nlays
 !          USE UTILIO_DEFN
 !          use centralized_io_util_module, only : binary_search
-!
+
 !          character (*), intent(in) :: vname
 !          integer, intent(in)       :: date, time
 !          logical, intent(in)       :: flag
 !          real, intent(out)         :: data(:,:)
-!
+
 !          integer :: var_loc
 !          character (40) :: msg
-!
+
 !          var_loc = binary_search (vname, vname_2d, n2d_data)
-!
+
 !          if (var_loc .gt. 0) then
 !             data = g2ddata(:,:,var_loc)
 !          else
 !             write (msg, *) ' Error: Cannot find species ', trim(vname)
 !             call prog_interrupt ( 'interpolate_var', 0, 0, msg, 1)
 !          end if
-!
+
 !        end subroutine r_interpolate_var_2dx
-!
-!! -------------------------------------------------------------------------
+
+! -------------------------------------------------------------------------
 !        subroutine r_interpolate_var_3d (vname, date, time, data, fname)
-!
+
 !          use hgrd_defn, only : ncols, nrows
 !          USE UTILIO_DEFN
 !          use util_module, only : nextime, secsdiff
 !          use centralized_io_util_module, only : binary_search
 !          use util_module, only : time2sec
-!
+
 !          character (*), intent(in) :: vname
 !          integer, intent(in)       :: date, time
 !          real, intent(out)         :: data(:,:,:)
 !          character (*), intent(in), optional :: fname
-!
+
 !          integer :: var_loc, slen, loc_head, loc_tail, 
 !     &               loc_jdate, loc_jtime, beg_k, end_k,
 !     &               m, k, r, c,
@@ -5981,38 +5983,38 @@ C   mminlu and num_land_cat are WRF global variables
 !          real, save :: ratio1, ratio2
 !          character (40) :: msg, loc_vname
 !          character (20) :: loc_mpas_time_stamp
-!
+
 !          if (present(fname)) then
 !             slen = len_trim(fname)
 !             loc_vname = trim(vname) // fname(slen-3:slen)
 !          else
 !             loc_vname = vname
 !          end if
-!
+
 !          var_loc = binary_search (loc_vname, vname_3d, n3d_data)
-!
+
 !          if (var_loc .gt. 0) then
 !             data = g3ddata(:,:,:,var_loc)
 !          else
-!
+
 !             var_loc = binary_search (loc_vname, cio_grid_var_name(:,1), n_cio_grid_vars)
-!
+
 !             if (var_loc .lt. 0) then
 !                write (msg, *) ' Error: Cannot find species ', trim(vname)
 !                call prog_interrupt ( 'interpolate_var', 0, 0, msg, 1)
 !             else
 !                loc_head = head_grid(var_loc)
 !                loc_tail = tail_grid(var_loc)
-!
-!
+
+
 !                if (cio_grid_var_name(var_loc,3) == 'm') then
 !                   loc_tstep = file_tstep(f_met) 
 !                else if ((cio_grid_var_name(var_loc,2) == 'e2d') .or.
 !     &              (cio_grid_var_name(var_loc,2) == 'e3d')) then
-!
+
 !                   slen = len_trim(cio_grid_var_name(var_loc,1))
 !                   read (cio_grid_var_name(var_loc,1)(slen-2:slen), *) fnum
-!
+
 !                   loc_tstep = file_tstep(f_emis(fnum)) 
 !                else if (cio_grid_var_name(var_loc,2) == 'lnt') then
 !                   loc_tstep = file_tstep(f_ltng)
@@ -6023,27 +6025,27 @@ C   mminlu and num_land_cat are WRF global variables
 !                else if (cio_grid_var_name(var_loc,2) == 'is') then
 !                   loc_tstep = file_tstep(f_is_icon)
 !                end if
-!
+
 !                call julian_to_mpas_date_time (date, time, loc_mpas_time_stamp)
-!
+
 !                if (cio_mpas_grid_data_tstamp(loc_tail, var_loc) .lt. loc_mpas_time_stamp) then
-!
+
 !                   call mpas_date_time_to_julian (cio_mpas_grid_data_tstamp(loc_tail, var_loc), loc_jdate, loc_jtime)
-!
+
 !                   call retrieve_time_dep_gridded_data (loc_jdate, loc_jtime, loc_vname)
 !                   loc_head = head_grid(var_loc)
 !                   loc_tail = tail_grid(var_loc)
 !                end if
-!
+
 !                if ((cio_grid_data_tstamp(1, 2, var_loc) .eq. date) .and.
 !     &              (cio_grid_data_tstamp(2, 2, var_loc) .eq. time)) then
 !                   count = count + 1
 !                else
-!
+
 !                   cio_grid_data_tstamp(1, 2, var_loc) = date
 !                   cio_grid_data_tstamp(2, 2, var_loc) = time
-!
-!
+
+
 !                   if ((prev_time .ne. time) .or.
 !     &                 (prev_head_time .ne. cio_grid_data_tstamp(2, loc_head, var_loc))) then
 !                      if (cio_grid_data_tstamp(1, loc_head, var_loc) .eq. date) then
@@ -6060,26 +6062,26 @@ C   mminlu and num_land_cat are WRF global variables
 !                   else
 !                      lcount = lcount + 1
 !                   end if
-!
+
 !                   head_beg_ind  = cio_grid_data_inx(1,loc_head,var_loc)
 !                   head_end_ind  = cio_grid_data_inx(2,loc_head,var_loc)
 !                   tail_beg_ind  = cio_grid_data_inx(1,loc_tail,var_loc)
 !                   tail_end_ind  = cio_grid_data_inx(2,loc_tail,var_loc)
 !                   store_beg_ind = cio_grid_data_inx(1,2,var_loc)
 !                   store_end_ind = cio_grid_data_inx(2,2,var_loc)
-!
+
 !                   cio_grid_data(store_beg_ind:store_end_ind) =   cio_grid_data(head_beg_ind:head_end_ind) * ratio1
 !     &                                                          + cio_grid_data(tail_beg_ind:tail_end_ind) * ratio2
-!
+
 !                end if
-!
+
 !                beg_k = 1
 !                if (cio_grid_var_name(var_loc, 2) .eq. 'e2d') then
 !                   end_k = 1
 !                else
 !                   end_k = size(data,3)
 !                end if
-!
+
 !                store_beg_ind = cio_grid_data_inx(1,2,var_loc)
 !                m = store_beg_ind - 1
 !                do k = beg_k, end_k
@@ -6090,13 +6092,13 @@ C   mminlu and num_land_cat are WRF global variables
 !                      end do
 !                   end do
 !                end do
-!
+
 !             end if
 !          end if
-!
+
 !        end subroutine r_interpolate_var_3d
-!
-!#else
+
+#else
 ! -------------------------------------------------------------------------
         subroutine r_interpolate_var_1ds (fname, vname, date, time, data)
 
@@ -6982,6 +6984,6 @@ C   mminlu and num_land_cat are WRF global variables
           end if
 
         end subroutine r_interpolate_var_3d
-!#endif  !ifdefine mpas for the few functions in the interface (Wei Li)
+#endif
 
       END MODULE CENTRALIZED_IO_MODULE
