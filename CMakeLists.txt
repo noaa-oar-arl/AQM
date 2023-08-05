@@ -105,7 +105,7 @@ target_compile_definitions(CCTM PUBLIC SUBST_FILES_ID="FILES_CTM.EXT"
 				       WR_INIT=DUMMY_WR_INIT
                                        verbose_aero
 				       verbose_gas
-                                       mpas
+                                      # mpas
 				       _AQM_)
 
 # AQM
