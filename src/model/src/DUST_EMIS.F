@@ -17,7 +17,7 @@
 !  subject to their copyright restrictions.                              !
 !------------------------------------------------------------------------!
 
-C:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+!:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
       module dust_emis
      
 C-----------------------------------------------------------------------
@@ -112,7 +112,7 @@ C of Binkowski & Roselle (2003)
 C Number of soil types: For WRF there are 16 types;
       integer, parameter :: nsltyp = 16
 
-C Variables for FENGSHA dust scheme (Wei Li)
+C Variables for FENGSHA dust scheme (beiming tang)
       real, save :: dust_alpha    ! tuning parameter for FENGSHA dust emission flux
 
 C Variables for the windblown dust diagnostic file:
@@ -273,28 +273,26 @@ C Allocate emissions array
             success = .false.; return
          end if
 
-        !add fengsha scheme (Wei Li) 
-        if ( fengsha ) then
-
+         if ( fengsha ) then !(beiming tang)
+ 
 C Disable diagnostic output if FENGSHA is used
           dustem_diag = .false.
-
-C Allocate private arrays ! not used for now (Wei Li)
-          !allocate( tfb( ncols,nrows ), stat = status )
-
+ 
+C Allocate private arrays
+          allocate( tfb( ncols,nrows ), stat = status )
+ 
           if ( status .ne. 0 ) then
              xmsg = '*** Failure allocating WMAX or TFB'
              call m3warn( pname, jdate, jtime, xmsg )
              success = .false.; return
-          end if
-
+          end if 
 C Initialize land use/cover variables
           if ( .not. lus_init( jdate, jtime ) ) then
              xmsg = 'Failure initializing land use module'
              call m3exit( pname, jdate, jtime, xmsg, xstat2 )
           end if
-
-       else  !else fengsha is off & default is on
+ 
+          else
 
 C Allocate private arrays
          allocate( wmax  ( ncols,nrows ),
@@ -451,6 +449,7 @@ C...append diagnostic variables with mass emissions species
             if ( status .ne. 0 ) then
                xmsg = '*** Failure allocating DIAGNM_SWAP'
                call m3warn( pname, jdate, jtime, xmsg )
+               
                success = .false.; return
             end if
             diagnm_swap = diagnm 
@@ -471,8 +470,8 @@ C...append diagnostic variables with mass emissions species
      &         call opdust_emis ( stdate, sttime, tstep, ndust_diag, diagnm )
 
          end if   ! dustem_diag
-
-       end if    ! end dust scheme (Wei Li) 
+         
+         end if !dust scheme (beiming tang)
 
          l2sgj = log( sigj ) * log( sigj )
          l2sgk = log( sigk ) * log( sigk )
@@ -636,9 +635,8 @@ C Parameters:
          real, parameter :: sigb_mb  = sigb * mb   ! = 0.5
          real, parameter :: betab_mb = betab * mb  ! = 45.0
 
-         !(Wei Li)
-         character( 24 ) :: ctm_wbdust_fengsha_alpha = 'CTM_WBDUST_FENGSHA_ALPHA' ! env var to
-                                               ! retrieve FENGSHA scaling factor
+         character( 24 ) :: ctm_wbdust_fengsha_alpha = 'CTM_WBDUST_FENGSHA_ALPHA' ! env var to (beiming tang)
+                                                ! retrieve FENGSHA scaling factor
 
          character( 16 ) :: pname = 'GET_DUST_EMIS'
          character( 16 ) :: vname
@@ -677,8 +675,8 @@ C Parameters:
          real       :: lambdav           ! vegetation roughness density - Shao et. al [Aus. J. Soil Res., 1996]
          real       :: flxfac1, flxfac2  ! combined soli type mapping factors
          real       :: hflux, vflux      ! horizontal and vertical dust flux
-         real       :: v2h               ! vertical/horizontal dust flux ratio !(Wei Li)
-         real       :: wm                ! max adsorb water [%] !(Wei Li)
+         real       :: v2h               ! vertical/horizontal dust flux ratio (beiming tang)
+         real       :: wm                ! max adsorb water [%]
          real       :: jday
          integer    :: emap( n_dlcat+1 )
 
@@ -763,36 +761,32 @@ C-----------------------------------------------------------------------
 
          if ( firstime ) then
             firstime = .false.
-            !call dust_alpha from env variable (Wei Li)
-            if ( fengsha ) then 
-              dust_alpha = 0.05    ! default
+            if ( fengsha ) then
+              dust_alpha = 0.05    ! default   (beiming tang)
               dust_alpha = envreal( ctm_wbdust_fengsha_alpha,
-     &        'Emission global scaling factor for FENGSHA dust scheme',
-     &         dust_alpha, status )
+     &          'Emission global scaling factor for FENGSHA dust scheme',
+     &          dust_alpha, status )
               if ( status .ne. 0 ) then
                  xmsg = '*** Failure retrieving FENGSHA scaling factor'
                  call m3exit( pname, jdate, jtime, xmsg, xstat1 )
               end if
               write(xmsg,'("Using FENGSHA alpha = ",g12.5)') dust_alpha
-              call m3msg2 ( xmsg ) !from AQM/src/io/ioapi/m3msg2.F90
-              !if envreal is not found (from IOAPI app); try below from 'get_env_module'
-              !The ctm_wbdust_fengsha_alpha = 'CTM_WBDUST_FENGSHA_ALPHA' can be deleted
-              !call GET_ENV(dust_alpha, 'CTM_WBDUST_FENGSHA_ALPHA', dust_alpha, VARDEV)
-            else !else is default scheme
-              allocate ( ustr( ncols,nrows,n_dlcat+1 ),
-     &                  qam( ncols,nrows,n_dlcat+1 ),
-     &                 fruf( ncols,nrows,n_dlcat+1 ),
-     &                  kvh( ncols,nrows,n_dlcat+1 ),
-     &                 elus( ncols,nrows,n_dlcat+1 ), stat = status )
-              if ( status .ne. 0 ) then
-                 xmsg = '*** Failure allocating USTR, QAM, FRUF, KVH, or ELUS'
-                 call m3exit( pname, jdate, jtime, xmsg, xstat1 )
-              end if
-            end if  !end fengsha
+              call m3msg2 ( xmsg )
+            else
+                allocate ( ustr( ncols,nrows,n_dlcat+1 ),
+         &                  qam( ncols,nrows,n_dlcat+1 ),
+         &                 fruf( ncols,nrows,n_dlcat+1 ),
+         &                  kvh( ncols,nrows,n_dlcat+1 ),
+         &                 elus( ncols,nrows,n_dlcat+1 ), stat = status )
+                if ( status .ne. 0 ) then
+                   xmsg = '*** Failure allocating USTR, QAM, FRUF, KVH, or ELUS'
+                   call m3exit( pname, jdate, jtime, xmsg, xstat1 )
+                end if
+            end if
          end if
 
-C---Select dust scheme
-      if ( fengsha ) then
+C---Select dust scheme (beiming tang)
+         if ( fengsha ) then
 
          do r = 1, nrows
          do c = 1, ncols
@@ -813,22 +807,22 @@ C    Fecan et al. [1999,Annales Geophys.,17,144-157]
      &              * Met_Data%clayf( c,r )
 
 C Change soil moisture units from volumetric (m**3/m**3) to gravimetric (Kg/Kg)
-               soimt( c,r ) = Met_Data%soim1( c,r ) ! <- [m**3/m**3]
+               soimt( c,r ) = Met_Data%soim1( c,r ) ! <-[m**3/m**3]
      &                      * 1000.0 / ( 2650.0 * ( 0.511 + 0.126
-     &                                          * Met_Data%sandf( c,r ) ) )
+     &                                          * Met_Data%sandf(c,r ) ) )
 
 C---Soil moisture effect on U*t
-               if ( soimt( c,r ) .le. 0.01 * wm ) then   ! wm in [%]
+               if ( soimt( c,r ) .le. 0.01 * wm ) then   ! wm in[%]
                   fmoit( c,r ) = 1.0
                else
-                  fmoit( c,r ) = sqrt( 1.0 + 1.21 * ( 100.0 * soimt( c,r ) - wm ) ** 0.68 )
+                  fmoit( c,r ) = sqrt( 1.0 + 1.21 * ( 100.0 *soimt( c,r ) - wm ) ** 0.68 )
                end if
 
 C Calculate Vertical to Horizontal Mass Flux Ratio
 C -- This is based on MB95
                if ( Met_Data%clayf(c,r) < 0.2) then
                   v2h = 10. ** (13.4 * Met_Data%clayf( c,r ) - 6.0)
-               else
+               else        
                   v2h = 4.0e-4
                endif
 C Horizontal Flux
@@ -838,20 +832,20 @@ C Horizontal Flux
      &                                     Met_Data%uthr( c,r ),
      &                                     1.0, ! ssm = 1
      &                                     Met_Data%dens1( c,r ) )
-
-               vflux = v2h * hflux         !  [g/m**2/s]
-
-               rlay1hgt = rjacm ( c,r ) / cellhgt
-               !tfb and tfa not used for now (Wei Li)
-               dust_em( c,r ) = dust_alpha * vflux * rlay1hgt !* tfa(c,r) * tfb(c,r)
-
-           end if   ! if rain & land & snow & drag
-
-         end do   ! c
-         end do   ! r
-
-       else     ! default dust scheme
-
+ 
+                vflux = v2h * hflux         !  [g/m**2/s]
+ 
+                rlay1hgt = rjacm ( c,r ) / cellhgt
+ 
+                dust_em( c,r ) = dust_alpha * vflux * rlay1hgt *tfa(c,r) * tfb(c,r)
+ 
+            end if   ! if rain & land & snow & drag
+ 
+          end do   ! c
+          end do   ! r
+ 
+          else     ! default dust scheme
+  
 C---Get Julian day number in year
          jday = float( mod( jdate,1000 ) )
 
@@ -1134,7 +1128,7 @@ C --------- ###### End Main Loop ##### ---------
      &                                          out of total cells:',
      &                                          dryhit, (c-1)*(r-1)
 #endif
-       end if  ! dust scheme (Wei Li)
+         end if !dust scheme (beiming tang)
 
          do r = 1, nrows
          do c = 1, ncols
@@ -1380,15 +1374,14 @@ C---Horiz. Flux from Owen (1964)
 
          end function dust_hflux
 
-         ! add a new function for fengsha (Wei Li)
-         function dust_hflux_fengsha( ustar, fmoit, drag, uthr, ssm, dens )
+         function dust_hflux_fengsha( ustar, fmoit, drag, uthr,ssm, dens ) !beiming tang
      &      result( hflux )
 
             implicit none
 
             include SUBST_CONST   ! for grav
 
-            real, intent( in ) :: ustar, fmoit, drag, uthr, ssm, dens
+            real, intent( in ) :: ustar, fmoit, drag, uthr, ssm,dens
             real hflux
             real rustar
             real u_sum
@@ -1405,8 +1398,9 @@ C---Horiz. Flux from Owen (1964)
             u_thresh = uthr * fmoit
             u_sum = rustar * u_thresh
 
-            hflux = max(0., rustar - u_thresh) * u_sum * u_sum * fac * ssm
-
+            hflux = max(0., rustar - u_thresh) * u_sum * u_sum *fac * ssm
+ 
          end function dust_hflux_fengsha
+
       end module dust_emis
 

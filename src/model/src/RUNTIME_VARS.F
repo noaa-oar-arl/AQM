@@ -97,7 +97,7 @@
 
 ! this is for MPAS
       LOGICAL :: ncd_64bit_offset = .FALSE.
-      INTEGER :: cell_num = 1 !(Wei Li; tested )
+      INTEGER :: cell_num !beiming tang
       !-----------------------------------------------------------------------------------
       !>> Define Environment Variables for Controlling CMAQ Processes
       !-----------------------------------------------------------------------------------
@@ -609,7 +609,7 @@
          CALL GET_ENV ( NLAYS_DIAG, 'NLAYS_PHOTDIAG', NLAYS_DIAG, VARDEV )
 
       ! Get Desired Wavelengths for Diagnostic Output
-        CALL GET_ENV( 'NWAVE_PHOTDIAG', NWAVE, WAVE_ENV, VARDEV )
+        CALL GET_ENV( 'NWAVE_PHOTDIAG', NWAVE, WAVE_ENV, VARDEV ) !this could be wrong, why char before NWAVE, beiming???
       END IF  
 
       ! Get flag to use core-shell mixing model for aerosol optical properties
@@ -934,8 +934,8 @@
 
 ! for MPAS
 #ifdef mpas
-      call get_env (ncd_64bit_offset, 'ncd_64bit_offset', .false., vardev)
-      call get_env( cell_num, 'cell_num', 1, vardev)
+      call get_env(ncd_64bit_offset, 'ncd_64bit_offset', .false., vardev)
+      call get_env(cell_num, 'cell_num', 1, vardev)
 #endif
 
 #ifdef twoway
