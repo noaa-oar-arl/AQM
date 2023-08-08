@@ -129,24 +129,14 @@ C-------------------------------------------------------------------------------
          Integer, Allocatable :: LPBL     ( :,: )  ! PBL layer
          Logical, Allocatable :: CONVCT   ( :,: )  ! convection flag
          Real,    Allocatable :: PBL      ( :,: )  ! pbl height (m)
-!         Real,    Allocatable :: NACL_EMIS( :,: )  ! NACL mass emission rate of particles with d <10 um (g/m2/s)
+
+!Real,            Allocatable :: NACL_EMIS( :,: )  ! NACL mass emission rate of particles with d <10 um (g/m2/s)
          Real,    Allocatable :: COSZEN   ( :,: )  ! Cosine of the zenith angle
          Real,    Allocatable :: CFRAC    ( :,: )  ! cloud fraction
 
-!> Inline Canopy Processes (Wei Li)
-         Real,    Allocatable :: FCH      ( :,: )  ! Forest Canopy Height (m)
-         Real,    Allocatable :: FRT      ( :,: )  ! Forest Fraction
-         Real,    Allocatable :: CLU      ( :,: )  ! Clumping Index
-         Real,    Allocatable :: POPU     ( :,: )  ! Population Density (people/10km2)
-         Real,    Allocatable :: LAIE     ( :,: )  ! ECCC BELD3 Derived LAI (m2/m2)
-         Real,    Allocatable :: C1R      ( :,: )  ! cumulative LAI fraction hc to 0.75 * hc
-         Real,    Allocatable :: C2R      ( :,: )  ! cumulative LAI fraction hc to 0.50 * hc
-         Real,    Allocatable :: C3R      ( :,: )  ! cumulative LAI fraction hc to 0.35 * hc
-         Real,    Allocatable :: C4R      ( :,: )  ! cumulative LAI fraction hc to 0.20 * hc
-
-!> FENGSHA option (Wei Li)
-         Real,    Allocatable :: CLAYF    ( :,: )  ! Fractional Clay Content
-         Real,    Allocatable :: SANDF    ( :,: )  ! Fractional Sand Content
+!> FENGSHA option
+         Real,    Allocatable :: CLAYF    ( :,: )  ! Fractional Clay Content 
+         Real,    Allocatable :: SANDF    ( :,: )  ! Fractional Sand Content 
          Real,    Allocatable :: DRAG     ( :,: )  ! Drag Partion
          Real,    Allocatable :: UTHR     ( :,: )  ! Dry Threshold Friction Velocity
 
@@ -156,7 +146,7 @@ C-------------------------------------------------------------------------------
 !> 3-D meteorological fields:
          Real,    Allocatable :: KZMIN    ( :,:,: )  ! minimum Kz [m**2/s]
          Real,    Allocatable :: PRES     ( :,:,: )  ! pressure [Pa]
-         Real,    Allocatable :: PRESF    ( :,:,: )  ! full layer pressure [Pa] (Wei Li)
+         Real,    Allocatable :: PRESF    ( :,:,: )  ! full layer pressure [Pa]
          Real,    Allocatable :: QV       ( :,:,: )  ! water vapor mixing ratio
          Real,    Allocatable :: QC       ( :,:,: )  ! cloud water mixing ratio
          Real,    Allocatable :: THETAV   ( :,:,: )  ! potential temp
@@ -169,8 +159,8 @@ C-------------------------------------------------------------------------------
          Real,    Allocatable :: RJACM    ( :,:,: )  ! reciprocal mid-layer Jacobian
          Real,    Allocatable :: RJACF    ( :,:,: )  ! reciprocal full-layer Jacobian
          Real,    Allocatable :: RRHOJ    ( :,:,: )  ! reciprocal density X Jacobian
-         Real,    Allocatable :: UWINDA   ( :,:,: )  ! [m/s] (Wei Li)
-         Real,    Allocatable :: VWINDA   ( :,:,: )  ! [m/s] (Wei Li)
+         Real,    Allocatable :: UWINDA   ( :,:,: )  ! [m/s]
+         Real,    Allocatable :: VWINDA   ( :,:,: )  ! [m/s]      
       End Type MET_Type
       
       Type :: GRID_Type
@@ -261,13 +251,9 @@ C Land use information:
       Real, allocatable, private :: BUFF2D( :,: )   ! 2D temp var
       Real, allocatable, private :: BUFF3D( :,:,: ) ! 3D temp var
 
-! Canopy option control (Wei Li)
-      CHARACTER( 20 ), SAVE :: CTM_CANOPY_SHADE = 'CTM_CANOPY_SHADE    '! env var for in-line
-      LOGICAL,         PUBLIC, SAVE :: CANOPY_SHADE     ! flag in-lining canopy shading
-
-! FENGSHA option control (Wei Li)
+! FENGSHA option control
       CHARACTER( 18 ),         SAVE :: CTM_WBDUST_FENGSHA = 'CTM_WBDUST_FENGSHA' ! env var for in-line
-      LOGICAL,         PUBLIC, SAVE :: FENGSHA                     ! flag for fengsha option
+      LOGICAL,         PUBLIC, SAVE :: FENGSHA           ! flag for fengsha option
 
       INTEGER                          IOSX             ! i/o and allocate memory status
 
@@ -623,15 +609,15 @@ C-----------------------------------------------------------------------
      &             Met_Data%CONVCT   ( NCOLS,NROWS ),
      &             Met_Data%PBL      ( NCOLS,NROWS ),
 !     &             Met_Data%NACL_EMIS( NCOLS,NROWS ),
+     &             Met_Data%UWINDA   ( NCOLS,NROWS,NLAYS ),
+     &             Met_Data%VWINDA   ( NCOLS,NROWS,NLAYS ),
      &             Met_Data%COSZEN   ( NCOLS,NROWS ),
      &             Met_Data%CFRAC    ( NCOLS,NROWS ),
-     &             Met_Data%UWINDA   ( NCOLS,NROWS,NLAYS ),  !(Wei Li)
-     &             Met_Data%VWINDA   ( NCOLS,NROWS,NLAYS ),  !(Wei Li)
      &             Met_Data%UWIND    ( NCOLS+1,NROWS+1,NLAYS ),
      &             Met_Data%VWIND    ( NCOLS+1,NROWS+1,NLAYS ),
      &             Met_Data%KZMIN    ( NCOLS,NROWS,NLAYS ),
-     &             Met_Data%PRESF    ( NCOLS,NROWS,1:NLAYS+1 ),  !(Wei Li)
      &             Met_Data%PRES     ( NCOLS,NROWS,NLAYS ),
+     &             Met_Data%PRESF    ( NCOLS,NROWS,1:NLAYS+1 ),
      &             Met_Data%QV       ( NCOLS,NROWS,NLAYS ),
      &             Met_Data%QC       ( NCOLS,NROWS,NLAYS ),
      &             Met_Data%THETAV   ( NCOLS,NROWS,NLAYS ),
@@ -716,33 +702,7 @@ C-----------------------------------------------------------------------
             Grid_Data%BSLP    = 0.0
          End If
 
-!> ccccccccccccccccccccc canopy shade option!ccccccccccccccccccccc (Wei Li)
-         CANOPY_SHADE = ENVYN( 'CTM_CANOPY_SHADE',
-     &                   'Flag for in-line canopy shading',
-     &                   .FALSE., IOSX )
-
-!         IF ( CANOPY_SHADE ) THEN
-!            XMSG = 'Using in-line canopy shading option'
-!            CALL M3MSG2( XMSG )
-!         END IF
-         If ( CANOPY_SHADE  ) Then
-            ALLOCATE( Met_Data%FCH    ( NCOLS,NROWS ),
-     &                Met_Data%FRT    ( NCOLS,NROWS ),
-     &                Met_Data%CLU    ( NCOLS,NROWS ),
-     &                Met_Data%POPU   ( NCOLS,NROWS ),
-     &                Met_Data%LAIE   ( NCOLS,NROWS ),
-     &                Met_Data%C1R    ( NCOLS,NROWS ),
-     &                Met_Data%C2R    ( NCOLS,NROWS ),
-     &                Met_Data%C3R    ( NCOLS,NROWS ),
-     &                Met_Data%C4R    ( NCOLS,NROWS ),
-     &                STAT = ALLOCSTAT )
-            If ( ALLOCSTAT .Ne. 0 ) Then
-               XMSG = 'Failure allocating Canopy Shade variables'
-               Call M3EXIT( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
-            End If
-         End If
-
-!> ccccccccccccccccccccc Fengsha option!ccccccccccccccccccccc (Wei Li)
+!> ccccccccccccccccccccc Fengsha option!ccccccccccccccccccccc
          FENGSHA = ENVYN( CTM_WBDUST_FENGSHA,
      &                   'Flag for in-line fengsha ',
      &                   .FALSE., IOSX )
@@ -761,9 +721,9 @@ C-----------------------------------------------------------------------
             If ( ALLOCSTAT .Ne. 0 ) Then
                XMSG = 'Failure allocating Fengsha variables'
                Call M3EXIT( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
-            End If
-         End If
-
+             End If
+          End If
+ 
 
 !> ccccccccccccccccccccc enable backward compatiblity ccccccccccccccccccccc
 
@@ -911,11 +871,7 @@ C-------------------------------- MET_CRO_3D --------------------------------
 
          call interpolate_var ('PRES', jdate, jtime, Met_Data%PRES)
 
-         call interpolate_var ('PRESF', jdate, jtime, Met_Data%PRESF) !(Wei Li)
-
-         call interpolate_var ('UWINDA', jdate, jtime, Met_Data%UWINDA) !(Wei Li)
-
-         call interpolate_var ('VWINDA', jdate, jtime, Met_Data%VWINDA) !(Wei Li)
+         call interpolate_var ('PRESF', jdate, jtime, Met_Data%PRESF)
 
          call interpolate_var ('ZF', jdate, jtime, Met_Data%ZF)
 
@@ -941,36 +897,28 @@ C-------------------------------- MET_CRO_3D --------------------------------
 
          call interpolate_var ('QC', jdate, jtime, Met_Data%QC)
 
+          call interpolate_var ('UWINDA', jdate, jtime, Met_Data%UWINDA)
+
+          call interpolate_var ('VWINDA', jdate, jtime, Met_Data%VWINDA)
 C-------------------------------- MET_CRO_2D --------------------------------
 C Vegetation and surface vars
+
          call interpolate_var ('LAI', jdate, jtime, Met_Data%LAI)
 
          call interpolate_var ('VEG', jdate, jtime, Met_Data%VEG)
 
          call interpolate_var ('ZRUF', jdate, jtime, Met_Data%Z0)
 
-C Canopy vars (Wei Li)
-         If ( CANOPY_SHADE ) Then
-           call interpolate_var ('FCH', jdate, jtime, Met_Data%FCH)
-           call interpolate_var ('FRT', jdate, jtime, Met_Data%FRT)
-           call interpolate_var ('CLU', jdate, jtime, Met_Data%CLU)
-           call interpolate_var ('POPU', jdate, jtime, Met_Data%POPU)
-           call interpolate_var ('LAIE', jdate, jtime, Met_Data%LAIE)
-           call interpolate_var ('C1R', jdate, jtime, Met_Data%C1R)
-           call interpolate_var ('C2R', jdate, jtime, Met_Data%C2R)
-           call interpolate_var ('C3R', jdate, jtime, Met_Data%C3R)
-           call interpolate_var ('C4R', jdate, jtime, Met_Data%C4R)
+C FENGSHA vars
+         If ( FENGSHA ) Then
+             call interpolate_var ('CLAYF', jdate, jtime, Met_Data%CLAYF)
+
+             call interpolate_var ('SANDF', jdate, jtime, Met_Data%SANDF)
+
+             call interpolate_var ('DRAG', jdate, jtime, Met_Data%DRAG)
+
+             call interpolate_var ('UTHR', jdate, jtime, Met_Data%UTHR)
          End If
-
-C FENGSHA vars (Wei Li)
-         If ( CANOPY_SHADE ) Then
-           call interpolate_var ('CLAYF', jdate, jtime, Met_Data%CLAYF)
-           call interpolate_var ('SANDF', jdate, jtime, Met_Data%SANDF)
-           call interpolate_var ('DRAG', jdate, jtime, Met_Data%DRAG)
-           call interpolate_var ('UTHR', jdate, jtime, Met_Data%UTHR)
-         End If
-
-
 C Soil vars
          call interpolate_var ('SOIM1', jdate, jtime, Met_Data%SOIM1)
 
