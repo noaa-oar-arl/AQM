@@ -262,7 +262,7 @@ C Land use information:
       Real, allocatable, private :: BUFF3D( :,:,: ) ! 3D temp var
 
 ! Canopy option control
-      CHARACTER( 20 ), SAVE :: CTM_CANOPY_SHADE = 'CTM_CANOPY_SHADEC'! env var for in-line
+      CHARACTER( 20 ), SAVE :: CTM_CANOPY_SHADE = 'CTM_CANOPY_SHADE'! env var for in-line
       LOGICAL,         PUBLIC, SAVE :: CANOPY_SHADE     ! flag in-lining canopy shading
 
 ! FENGSHA option control
