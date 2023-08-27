@@ -116,8 +116,8 @@
 
         ! read nlat, nlon
         rewind( tmunit )
-        read( tmunit, '(5x,i7)') label,nlat
-        read( tmunit, '(5x,i7)') label,nlon
+        read( tmunit, *) label,nlat
+        read( tmunit, *) label,nlon
 
         write(logdev,'(a,i7,a,i7)')'OMI Ozone column data has Lat by Lon Resolution: ',
      &  nlat,'X',nlon
