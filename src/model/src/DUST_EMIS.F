@@ -17,7 +17,7 @@
 !  subject to their copyright restrictions.                              !
 !------------------------------------------------------------------------!
 
-!:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+C:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
       module dust_emis
      
 C-----------------------------------------------------------------------
@@ -112,7 +112,7 @@ C of Binkowski & Roselle (2003)
 C Number of soil types: For WRF there are 16 types;
       integer, parameter :: nsltyp = 16
 
-C Variables for FENGSHA dust scheme (beiming tang)
+C Variables for FENGSHA dust scheme
       real, save :: dust_alpha    ! tuning parameter for FENGSHA dust emission flux
 
 C Variables for the windblown dust diagnostic file:
@@ -273,13 +273,14 @@ C Allocate emissions array
             success = .false.; return
          end if
 
-         if ( fengsha ) then !(beiming tang)
+         if ( fengsha ) then
  
 C Disable diagnostic output if FENGSHA is used
           dustem_diag = .false.
  
 C Allocate private arrays
-          allocate( tfb( ncols,nrows ), stat = status )
+          !allocate( tfb( ncols,nrows ), stat = status )  !tfa and tfb
+          !were removed in most recent note.
  
           if ( status .ne. 0 ) then
              xmsg = '*** Failure allocating WMAX or TFB'
@@ -471,7 +472,7 @@ C...append diagnostic variables with mass emissions species
 
          end if   ! dustem_diag
          
-         end if !dust scheme (beiming tang)
+         end if !dust scheme
 
          l2sgj = log( sigj ) * log( sigj )
          l2sgk = log( sigk ) * log( sigk )
@@ -635,7 +636,7 @@ C Parameters:
          real, parameter :: sigb_mb  = sigb * mb   ! = 0.5
          real, parameter :: betab_mb = betab * mb  ! = 45.0
 
-         character( 24 ) :: ctm_wbdust_fengsha_alpha = 'CTM_WBDUST_FENGSHA_ALPHA' ! env var to (beiming tang)
+         character( 24 ) :: ctm_wbdust_fengsha_alpha = 'CTM_WBDUST_FENGSHA_ALPHA' ! env var to
                                                 ! retrieve FENGSHA scaling factor
 
          character( 16 ) :: pname = 'GET_DUST_EMIS'
@@ -675,7 +676,7 @@ C Parameters:
          real       :: lambdav           ! vegetation roughness density - Shao et. al [Aus. J. Soil Res., 1996]
          real       :: flxfac1, flxfac2  ! combined soli type mapping factors
          real       :: hflux, vflux      ! horizontal and vertical dust flux
-         real       :: v2h               ! vertical/horizontal dust flux ratio (beiming tang)
+         real       :: v2h               ! vertical/horizontal dust flux ratio
          real       :: wm                ! max adsorb water [%]
          real       :: jday
          integer    :: emap( n_dlcat+1 )
@@ -762,9 +763,9 @@ C-----------------------------------------------------------------------
          if ( firstime ) then
             firstime = .false.
             if ( fengsha ) then
-              dust_alpha = 0.05    ! default   (beiming tang)
+              dust_alpha = 0.05    ! default 
               dust_alpha = envreal( ctm_wbdust_fengsha_alpha,
-     &          'Emission global scaling factor for FENGSHA dust scheme',
+     &        'Emission global scaling factor for FENGSHA dust scheme',
      &          dust_alpha, status )
               if ( status .ne. 0 ) then
                  xmsg = '*** Failure retrieving FENGSHA scaling factor'
@@ -772,20 +773,20 @@ C-----------------------------------------------------------------------
               end if
               write(xmsg,'("Using FENGSHA alpha = ",g12.5)') dust_alpha
               call m3msg2 ( xmsg )
-            else
+            else !this is default case
                 allocate ( ustr( ncols,nrows,n_dlcat+1 ),
-         &                  qam( ncols,nrows,n_dlcat+1 ),
-         &                 fruf( ncols,nrows,n_dlcat+1 ),
-         &                  kvh( ncols,nrows,n_dlcat+1 ),
-         &                 elus( ncols,nrows,n_dlcat+1 ), stat = status )
+     &                  qam( ncols,nrows,n_dlcat+1 ),
+     &                 fruf( ncols,nrows,n_dlcat+1 ),
+     &                  kvh( ncols,nrows,n_dlcat+1 ),
+     &                 elus( ncols,nrows,n_dlcat+1 ), stat = status )
                 if ( status .ne. 0 ) then
                    xmsg = '*** Failure allocating USTR, QAM, FRUF, KVH, or ELUS'
                    call m3exit( pname, jdate, jtime, xmsg, xstat1 )
                 end if
-            end if
+            end if !end fengsha
          end if
 
-C---Select dust scheme (beiming tang)
+C---Select dust scheme
          if ( fengsha ) then
 
          do r = 1, nrows
@@ -837,7 +838,7 @@ C Horizontal Flux
  
                 rlay1hgt = rjacm ( c,r ) / cellhgt
  
-                dust_em( c,r ) = dust_alpha * vflux * rlay1hgt *tfa(c,r) * tfb(c,r)
+                dust_em( c,r ) = dust_alpha * vflux * rlay1hgt! *tfa(c,r) * tfb(c,r)
  
             end if   ! if rain & land & snow & drag
  
@@ -1128,7 +1129,7 @@ C --------- ###### End Main Loop ##### ---------
      &                                          out of total cells:',
      &                                          dryhit, (c-1)*(r-1)
 #endif
-         end if !dust scheme (beiming tang)
+         end if !dust scheme 
 
          do r = 1, nrows
          do c = 1, ncols
@@ -1374,7 +1375,7 @@ C---Horiz. Flux from Owen (1964)
 
          end function dust_hflux
 
-         function dust_hflux_fengsha( ustar, fmoit, drag, uthr,ssm, dens ) !beiming tang
+         function dust_hflux_fengsha( ustar, fmoit, drag, uthr,ssm, dens )
      &      result( hflux )
 
             implicit none

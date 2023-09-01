@@ -96,12 +96,11 @@
       real, allocatable, save :: lat( : )
       real, allocatable, save :: lon( : )
       real, allocatable, save :: oz( :, :, : ) ! two timesteps for interpolation
-
+      
+      character( 8 ) :: label
       logical, save :: firsttime = .true.
-      character( 8 ) :: label  !(Wei li)
-      real, external :: yr2day  !(Wei Li: from io/ioapi/yr2day.F)
-      character*24, external :: dt2str !(Wei Li)
-
+      real, external :: yr2day
+      character*24, external :: dt2str
 !----------------------------------------------------------------------
 
       if ( firsttime ) then
@@ -115,10 +114,10 @@
           call m3exit ( pname, jdate, 0, xmsg, xstat1 )
         end if
 
-        ! read nlat, nlon (Wei Li)
+        ! read nlat, nlon
         rewind( tmunit )
-        read( tmunit, *) label, nlat
-        read( tmunit, *) label, nlon
+        read( tmunit, *) label,nlat
+        read( tmunit, *) label,nlon
 
         write(logdev,'(a,i7,a,i7)')'OMI Ozone column data has Lat by Lon Resolution: ',
      &  nlat,'X',nlon
@@ -135,17 +134,16 @@
           call m3exit ( pname, jdate, 0, xmsg, xstat1 )
         end if
         
-! Assign values to array of longitudes: lon
+!! Assign values to array of longitudes: lon
 !        x2 = 360.0 / real( nlon - 1 )
 !        do ilon = 1, nlon
 !          lon( ilon ) = -180.0 + x2 * real( ilon - 1 )
 !        end do
 
-        !read in longitudes instead (Wei Li)
-        read( tmunit, * ) label, label, lon 
+        read( tmunit, * ) label, label, lon ! read in longitudes
 
         nrecs = 0
-        ! read( tmunit, * ) !skip header record. Wei Li:no need here
+!        read( tmunit, * ) ! skip header record
         do
           read( tmunit, *, iostat=ios )
           if ( ios .ne. 0 ) exit
@@ -166,7 +164,6 @@
         end if
 
         rewind( tmunit )
-        ! skip header records
         read( tmunit, * )
         read( tmunit, * )
         read( tmunit, * )
@@ -310,7 +307,6 @@
             end do x1loop
 ! Determine the corresponding bounding ozone values for all lats and lons
            rewind( tmunit )
-           ! skip header records
            read( tmunit,* )
            read( tmunit,* )
            read( tmunit,* )

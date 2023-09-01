@@ -1396,8 +1396,8 @@ C***internal variables
 
       REAL T1F1, T2F1, T1F2, T2F2, T1F3, T2F3
       REAL T1G1, T2G1, T1G2, T2G2, T1G3, T2G3, T1G4, T2G4
-      REAL T1G5, T2G5
-      REAL(8) T1P1, T2P1 !(Wei Li)
+      REAL T1G5, T2G5 
+      REAL(8) T1P1, T2P1
 
 C***the following are for calculating the Penndorff Coefficients
 
@@ -1486,7 +1486,7 @@ C***FSB added for asymmetry factor calculation
       REAL QQSUM, QQF1,QQF2, QQF3, QQCORR
 
       REAL, PARAMETER :: DEGTORAD = PI180
-      REAL(8), PARAMETER :: THREE_PI_TWO = 3.0 * PI / 2.0  !(Wei Li)
+      REAL(8), PARAMETER :: THREE_PI_TWO = 3.0 * PI / 2.0
 
 C***FSB start calculation
       SIGMA_G = EXP( XLNSIG )
@@ -1534,11 +1534,11 @@ C     1.0 / 0.95 = 1.052632.  1.0 / 0.95 * 0.13 = 0.136842
       ALPHA_I = F2
       BEXT    = B
       BSCAT   = B
-      PENN1   = DBLE(0.0)   !(Wei Li)
-      PENN2   = DBLE(0.0)   !(Wei Li)
+      PENN1   = DBLE(0.0)
+      PENN2   = DBLE(0.0)
 
-      ALPHV2 = DBLE(ALPHV * ALPHV)  !(Wei Li)
-      ALPHV3 = DBLE(ALPHV2 * ALPHV) !(Wei Li)
+      ALPHV2 = DBLE(ALPHV * ALPHV)
+      ALPHV3 = DBLE(ALPHV2 * ALPHV)
 
       IF ( NI .GT. 0.0 ) THEN
 
@@ -1605,14 +1605,14 @@ C*** Calculate the Penndorf Coefficients for the small particle limit
          EXPFAC2 = EXP( 2.0 * XLNSIG2 )
          EXPFAC3 = EXP( 4.5 * XLNSIG2 )
 
-         T1P1 = DBLE(A1 + A2 * ALPHV2 * EXPFAC2) !(Wei Li)
-         T2P1 = DBLE(A3 * ALPHV3 * EXPFAC3)  !(Wei Li)
+         T1P1 = DBLE(A1 + A2 * ALPHV2 * EXPFAC2)
+         T2P1 = DBLE(A3 * ALPHV3 * EXPFAC3)
 
 C***PENN1 is the analytic integral of the Pendorff formulae over
 C***   a log normal particle size distribution.
 
-         PENN1 = DBLE(THREE_PI_TWO * ( T1P1 + T2P1 ) ) !(Wei Li) 
-         PENN2 = DBLE(THREE_PI_TWO * T2P1) !(Wei Li)
+         PENN1 = DBLE(THREE_PI_TWO * ( T1P1 + T2P1 ))
+         PENN2 = DBLE(THREE_PI_TWO * T2P1)
 
       END IF   ! test for ni > 0.0
 
@@ -1852,7 +1852,7 @@ C***internal variables
       REAL C, CEXT, CSCAT
       REAL B, BEXT, BSCAT
       REAL BBFAC
-      REAL(8) ALPHV  !(Wei Li)
+      REAL(8) ALPHV
       REAL ALPHA_I
       REAL A, LOGX2, XLNSIG, XLNSIG2, MM1
 
@@ -1866,7 +1866,7 @@ C***internal variables
       REAL LARGEEXT   ! large sphere limit for extinction
       REAL SMALL_G, LARGE_G
 
-      REAL(8) ALPHV2, ALPHV3 !(Wei Li)
+      REAL(8) ALPHV2, ALPHV3
       REAL X_ALPHA, X_ALPHA2, X_ALPHA3
       REAL FCORR
       REAL EXPFAC2, EXPFAC3
@@ -1879,12 +1879,12 @@ C***internal variables
       REAL T1F1, T2F1, T1F2, T2F2, T1F3, T2F3
       REAL T1G1, T2G1, T1G2, T2G2, T1G3, T2G3, T1G4, T2G4
       REAL T1G5, T2G5
-      REAL(8) T1P1, T2P1 !(Wei Li)
+      REAL(8)  T1P1, T2P1
 
 C***the following are for calculating the Penndorff Coefficients
 
       REAL A1, A2, A3
-      REAL(8) PENN1, PENN2  !(Wei Li)
+      REAL(8) PENN1, PENN2
       REAL XNR, XNI, XNR2, XNI2, XNRI, XNRI2, XNRMI
       REAL XRI, XRI2, XRI36, XNX, XNX2
       REAL Z1, Z12, Z2, XC1
@@ -1969,7 +1969,7 @@ C***FSB added for asymmetry factor calculation
       REAL QQSUM, QQF1,QQF2, QQF3, QQCORR
 
       REAL, PARAMETER :: DEGTORAD = PI180
-      REAL(8), PARAMETER :: THREE_PI_TWO = 3.0 * PI / 2.0   !(Wei Li)
+      REAL(8), PARAMETER :: THREE_PI_TWO = 3.0 * PI / 2.0
 
 
       REAL, PARAMETER :: SCALE = 1.00E+9
@@ -1982,9 +1982,9 @@ C *** Minimum allowed value fo SIGMA_F is 1.05
 C***FSB start calculation
       XLNSIG = LOG( SIGMA_G ) 
 
-      ALPHV = DBLE(SCALE * PI * DGN * EXP( 3.0 * XLNSIG * XLNSIG ) / LAMBDA) !(Wei Li)
-      ALPHV2 = DBLE(ALPHV * ALPHV)           !(Wei Li)
-      ALPHV3 = DBLE(ALPHV * ALPHV * ALPHV)   !(Wei Li)
+      ALPHV = DBLE(SCALE * PI * DGN * EXP( 3.0 * XLNSIG * XLNSIG ) / LAMBDA)
+      ALPHV2 = DBLE(ALPHV * ALPHV)
+      ALPHV3 = DBLE(ALPHV * ALPHV * ALPHV)
 
       XLNSIG2 = XLNSIG * XLNSIG
       A = 0.5 / XLNSIG2
@@ -2024,8 +2024,8 @@ C     1.0 / 0.95 = 1.052632.  1.0 / 0.95 * 0.13 = 0.136842
       ALPHA_I = F2
       BEXT    = B
       BSCAT   = B
-      PENN1   = DBLE(0.0) !(Wei Li)
-      PENN2   = DBLE(0.0) !(Wei Li)
+      PENN1   = DBLE(0.0)
+      PENN2   = DBLE(0.0)
 
       IF ( NI .GT. 0.0 ) THEN
 
@@ -2079,25 +2079,25 @@ C*** Calculate the Penndorf Coefficients for the small particle limit
          Z12   = Z1    * Z1
          Z2    = 4.0   * XNRI2 + 12.0 * XNRMI + 9.0
          XC1   = 8.0   / ( 3.0 * Z12 )
-         A1    = DBLE(24.0  * XRI / Z1) !(Wei Li)
+         A1    = DBLE(24.0  * XRI / Z1)
 
-         A2    = DBLE(44.0   * XRI / 15.0 + 20.0 * XRI / ( 3.0 * Z2 ) +
+         A2    = DBLE(4.0   * XRI / 15.0 + 20.0 * XRI / ( 3.0 * Z2 ) +
      &           4.8   * XRI * (  7.0 * XNRI2 +
-     &           4.0   * ( XNRMI - 5.0 ) ) / Z12 )  !(Wei Li)
+     &           4.0   * ( XNRMI - 5.0 ) ) / Z12)
 
-         A3    = DBLE(XC1   * ( XNX2 - XRI36 )) !(Wei Li)
+         A3    = DBLE(XC1   * ( XNX2 - XRI36 ))
 
          EXPFAC2 = EXP( 2.0 * XLNSIG2 )
          EXPFAC3 = EXP( 4.5 * XLNSIG2 )
 
-         T1P1 = DBLE(A1 + A2 * ALPHV2 * EXPFAC2)  !(Wei Li)
-         T2P1 = DBLE(A3 * ALPHV3 * EXPFAC3)       !(Wei Li)
+         T1P1 = DBLE(A1 + A2 * ALPHV2 * EXPFAC2)
+         T2P1 = DBLE(A3 * ALPHV3 * EXPFAC3)
 
 C***PENN1 is the analytic integral of the Pendorff formulae over
 C***   a log normal particle size distribution.
 
-         PENN1 = DBLE(THREE_PI_TWO * ( T1P1 + T2P1 )) !(Wei Li)
-         PENN2 = DBLE(THREE_PI_TWO * T2P1 )           !(Wei Li)
+         PENN1 = DBLE(THREE_PI_TWO * ( T1P1 + T2P1 ))
+         PENN2 = DBLE(THREE_PI_TWO * T2P1)
 
       END IF                    ! test of ni > 0.0
 
