@@ -875,7 +875,7 @@ c Recalculate bidi NH3 deposition
      &                         + LFAC2( L ) * SENS( V,L+1,NP )
                   END DO
 #endif
-               END DO
+!               END DO
 
 #ifdef isam
                DO JSPCTAG = 1, N_SPCTAG
