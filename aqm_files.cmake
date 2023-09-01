@@ -237,7 +237,7 @@ list(APPEND aqm_CCTM_files
         ${VDIFF}/VDIFF_DATA.F
 	${VDIFF}/VDIFF_DIAG.F
 	${VDIFF}/VDIFF_MAP.F
-        ${VDIFF}/vdiffacmx.F
+        #${VDIFF}/vdiffacmx.F
 	#${VDIFF}/vdiffproc.F
         ${VDIFF}/../../biog/megan3/BDSNP_MOD.F
 	${localCCTM}/o3totcol.f
@@ -251,7 +251,8 @@ list(APPEND aqm_CCTM_files
 	${localCCTM}/ASX_DATA_MOD.F
 	${localCCTM}/DUST_EMIS.F
 	${localCCTM}/AERO_PHOTDATA.F
-	${localCCTM}/phot.F
+        ${localCCTM}/vdiffacmx.F
+	#${localCCTM}/phot.F
         ${localCCTM}/centralized_io_module.F 
 	${localCCTM}/centralized_io_util_module.F
 )
