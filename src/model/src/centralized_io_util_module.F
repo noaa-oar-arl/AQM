@@ -357,7 +357,6 @@
              IntegrateTrapezoid = sum((y(1+1:n-0) + y(1+0:n-1))*(x(1+1:n-0) - x(1+0:n-1)))/2
            end associate
        end function
-
 ! ---------------------------------------------------------------------------
 
       function interp_linear1_internal(x,y,xout) result(yout)
@@ -384,5 +383,6 @@
         return
 
       end function interp_linear1_internal
+
 
       end module centralized_io_util_module
