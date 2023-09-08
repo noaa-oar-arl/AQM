@@ -17,7 +17,7 @@ list(APPEND aqm_shr_files
     src/shr/aqm_logger_mod.F90
     src/shr/aqm_model_mod.F90
     src/shr/aqm_rc_mod.F90
-    src/shr/aqm_methods.F90
+   # src/shr/aqm_methods.F90
     src/shr/aqm_species_mod.F90
     src/shr/aqm_state_mod.F90
     src/shr/aqm_tools_mod.F90
@@ -189,7 +189,8 @@ list(APPEND aqm_CCTM_files
 	${PHOT}/opphot.F
 	${PHOT}/PHOT_MET_DATA.F
 	${PHOT}/PHOT_MOD.F
-	${PHOT}/PHOTOLYSIS_ALBEDO.F
+       # ${PHOT}/AERO_PHOTDATA.F	
+        ${PHOT}/PHOTOLYSIS_ALBEDO.F
 	${PHOT}/PHOT_OPTICS.dat
 	${PHOT}/SEAS_STRAT_O3_MIN.F
 	${PHOT}/twoway_rrtmg_aero_optics.F90
@@ -249,10 +250,10 @@ list(APPEND aqm_CCTM_files
 	#${localCCTM}/PT3D_FIRE_DEFN.F
 	#${localCCTM}/PT3D_STKS_DEFN.F
 	${localCCTM}/ASX_DATA_MOD.F
-	${localCCTM}/DUST_EMIS.F
 	${localCCTM}/AERO_PHOTDATA.F
+        ${localCCTM}/DUST_EMIS.F
         ${localCCTM}/vdiffacmx.F
-	#${localCCTM}/phot.F
+	${localCCTM}/phot.F
         ${localCCTM}/centralized_io_module.F 
 	${localCCTM}/centralized_io_util_module.F
 )
