@@ -73,7 +73,7 @@
 
       PUBLIC
 
-      INTEGER :: OUTDEV = 6   ! File Unit for Standard Output
+      INTEGER :: OUTDEV = -1   ! File Unit for Standard Output (AQM change from 6)
       INTEGER :: LOGDEV = -1  ! File Unit for Ascii Log File
       INTEGER :: TOTPE  = 1   ! Number of Total Processors
       INTEGER :: NPROCS = 1   ! Number of Total Processors
@@ -97,7 +97,7 @@
 
 ! this is for MPAS
       LOGICAL :: ncd_64bit_offset = .FALSE.
-      INTEGER :: cell_num !beiming tang
+
       !-----------------------------------------------------------------------------------
       !>> Define Environment Variables for Controlling CMAQ Processes
       !-----------------------------------------------------------------------------------
@@ -341,7 +341,7 @@
       CALL MPI_COMM_SIZE ( MPI_COMM_WORLD, TOTPE, ERROR )
 #else
       MYPE = 0
-      TOTPE = 0
+      TOTPE = 1 !(AQM change from 0)
 #endif
  
       IF ( MYPE .EQ. 0 ) VARDEV = OUTDEV
@@ -349,8 +349,8 @@
       ! Get Simulation Scenario Name to Label Log Files, etc
       CALL GET_ENV( APPL_NAME, 'CTM_APPL', APPL_NAME, VARDEV )
       
-      ! Start I/O-API and set up log file(s)
-      CALL SETUP_LOGDEV()
+      ! Start I/O-API and set up log file(s) 
+      !CALL SETUP_LOGDEV()  !comment out Otherwise will crash (AQM)
       IF ( MYPE .EQ. 0 ) THEN 
          CALL LOG_HEADING( OUTDEV, "Environment Variable Report" )
          CALL LOG_SUBHEADING( OUTDEV, "Grid and High-Level Model Parameters" )
@@ -609,7 +609,7 @@
          CALL GET_ENV ( NLAYS_DIAG, 'NLAYS_PHOTDIAG', NLAYS_DIAG, VARDEV )
 
       ! Get Desired Wavelengths for Diagnostic Output
-        CALL GET_ENV( 'NWAVE_PHOTDIAG', NWAVE, WAVE_ENV, VARDEV ) !this could be wrong, why char before NWAVE, beiming???
+        CALL GET_ENV( 'NWAVE_PHOTDIAG', NWAVE, WAVE_ENV, VARDEV )
       END IF  
 
       ! Get flag to use core-shell mixing model for aerosol optical properties
@@ -925,17 +925,18 @@
          CALL M3EXIT( 'INIT_ENV_VARS', JDATE, JTIME, XMSG, EXIT_STATUS )
       END IF
 
-      IF ( OCEAN_CHEM ) THEN
-       IF ( (INDEX( MECHNAME, 'CB6R5M_AE7_AQ') .GT. 0 ) .OR. 
-     &      (INDEX( MECHNAME, 'CB6R5_AE7_AQ' ) .GT. 0) ) then     
-       USE_MARINE_GAS_EMISSION = .TRUE.
-       ENDIF
-      ENDIF
+      ! comment out since we do not have DMS emissions (AQM)
+      !IF ( OCEAN_CHEM ) THEN
+      ! IF ( (INDEX( MECHNAME, 'CB6R5M_AE7_AQ') .GT. 0 ) .OR. 
+      !&      (INDEX( MECHNAME, 'CB6R5_AE7_AQ' ) .GT. 0) ) then     
+      ! USE_MARINE_GAS_EMISSION = .TRUE.
+      ! ENDIF
+      !ENDIF
 
 ! for MPAS
 #ifdef mpas
-      call get_env(ncd_64bit_offset, 'ncd_64bit_offset', .false., vardev)
-      call get_env(cell_num, 'cell_num', 1, vardev)
+      call get_env (ncd_64bit_offset, 'ncd_64bit_offset', .false., vardev)
+      call get_env( cell_num, 'cell_num', 1, vardev)
 #endif
 
 #ifdef twoway

@@ -317,7 +317,7 @@
      &             ,retrieve_ocean_data_mpas
 #else
      &             ,boundary_files_setup,
-     &             retrieve_grid_cro_2d_data,
+     &             retrieve_grid_cro_2d_data, !public this function (AQM)
      &             retrieve_grid_dot_2d_data,
      &             retrieve_ocean_data
 #endif
@@ -560,6 +560,7 @@
           file_xcell(f_met) = xcell3d
           file_ycell(f_met) = ycell3d
 
+
           IF (INDEX1( 'TSEASFC', NVARS3D, VNAME3D ) .gt. 0) then
              TSEASFC_AVAIL = .true.
              adj = 0
@@ -775,8 +776,9 @@
 
 ! emission file, could be one or multiple layer
 
-          call desid_read_namelist()
-          call desid_init_regions()
+          !called somewhere else (AQM)
+          !call desid_read_namelist()
+          !call desid_init_regions()
 
           allocate (cio_emis_file_name(N_FILE_GR),
      &              cio_emis_file_loc(N_FILE_GR),
@@ -1347,7 +1349,7 @@
                 Call M3EXIT( PNAME, 0, 0, XMSG, XSTAT1 )
              END IF
 #else
-             If ( .Not. XTRACT3( MET_CRO_2D, 'SLTYP',
+             If ( .Not. XTRACT3( MET_CRO_2D, 'SLTYP',   
      &                           1, 1, STRTROWMC2, ENDROWMC2, STRTCOLMC2, ENDCOLMC2, 
      &                           jdate, jtime, SOILCAT_A ) ) THEN
                 XMSG = ' Error interpolating variable SLTYP from ' // MET_CRO_2D
@@ -1524,6 +1526,7 @@
                       XMSG = 'Could not extract ' // cio_emis_file_name(fnum) // ' file'
                       CALL M3EXIT ( PNAME, data_jdate, data_jtime, XMSG, XSTAT1 )
                    END IF
+                   
 #endif
 
                 else if (cio_grid_var_name(v,2) == 'e3d') then
@@ -1586,7 +1589,7 @@
                    end if
                    data_jdate = loc_jdate(f_emis(fnum))
                    data_jtime = loc_jtime(f_emis(fnum))
-
+                  
                    IF ( .NOT. XTRACT3( cio_emis_file_name(fnum), loc_vname,
      &                                 1, cio_emis_file_layer(fnum), 
      &                                 cio_emis_file_startrow(fnum), cio_emis_file_endrow(fnum),
@@ -1595,6 +1598,7 @@
                       XMSG = 'Could not extract ' // cio_emis_file_name(fnum) // ' file'
                       CALL M3EXIT ( PNAME, data_jdate, data_jtime, XMSG, XSTAT1 )
                    END IF
+
 
 #endif
 
@@ -1650,7 +1654,7 @@
                 cio_grid_data_tstamp(1, buf_loc, v) = data_jdate
                 cio_grid_data_tstamp(2, buf_loc, v) = data_jtime
 
-             end do
+             end do  !end v
 
 #ifndef mpas
 ! assign TEMPG to TSEASFC when TSEASFC is not available in the input file
@@ -4693,7 +4697,7 @@ C   mminlu and num_land_cat are WRF global variables
         subroutine centralized_io_init (in_ncols)
 
           use lsm_mod, only: n_lufrac, init_lsm
-          USE UTILIO_DEFN !, only : m3exit  !beiming tang
+          USE UTILIO_DEFN, only : m3exit
           USE RUNTIME_VARS, only: log_heading, logdev
 
 #ifdef mpas
@@ -4801,9 +4805,9 @@ C   mminlu and num_land_cat are WRF global variables
 
              call gridded_files_setup
 
-             call boundary_files_setup
+             !call boundary_files_setup  !(AQM)
 
-             call stack_files_setup
+             !call stack_files_setup  !(AQM)
 
              if (BIOGEMIS_BEIS) then
                 call biogemis_setup
@@ -4841,7 +4845,6 @@ C   mminlu and num_land_cat are WRF global variables
                 call soilinp_setup
              end if
 
-
              call retrieve_grid_cro_2d_data
 
              call retrieve_grid_dot_2d_data
@@ -4860,9 +4863,9 @@ C   mminlu and num_land_cat are WRF global variables
 #ifdef mpas
           call retrieve_stack_data_mpas (cio_model_sdate, cio_model_stime)
 #else
-          call retrieve_boundary_data (cio_model_sdate, cio_model_stime)
+          !call retrieve_boundary_data (cio_model_sdate, cio_model_stime)  !(AQM)
 
-          call retrieve_stack_data (cio_model_sdate, cio_model_stime)
+          !call retrieve_stack_data (cio_model_sdate, cio_model_stime)     !(AQM)
 #endif
 
         end subroutine centralized_io_init
@@ -6282,6 +6285,7 @@ C   mminlu and num_land_cat are WRF global variables
                 loc_size_spatial = size_c3d / nlays
              end if
 
+
              if ((cio_grid_data_tstamp(1, loc_tail, var_loc) .lt. date) .or.
      &           ((cio_grid_data_tstamp(2, loc_tail, var_loc) .lt. time) .and.
      &            (cio_grid_data_tstamp(1, loc_tail, var_loc) .eq. date))) then
@@ -6290,11 +6294,19 @@ C   mminlu and num_land_cat are WRF global variables
                 loc_jtime = cio_grid_data_tstamp(2, loc_tail, var_loc)
 
                 CALL NEXTIME ( loc_jdate, loc_jtime, loc_tstep )
+                call retrieve_time_dep_gridded_data (loc_jdate,loc_jtime, vname) 
 
-                call retrieve_time_dep_gridded_data (loc_jdate, loc_jtime, vname)
                 loc_head = head_grid(var_loc)
                 loc_tail = tail_grid(var_loc)
              end if
+
+                !add to log
+                !write(-1,*)'loc_head and tail:',loc_head,loc_tail,var_loc,loc_tstep,time2sec(loc_tstep)
+                !write(-1,*)'cio_grid_data_tstamp(1, 2,var_loc):',cio_grid_data_tstamp(1, 2, var_loc)
+                !write(-1,*)'cio_grid_data_tstamp(2,2,var_loc):',cio_grid_data_tstamp(2, 2, var_loc)
+                !write(-1,*)'cio_grid_data_tstamp(1, loc_head, var_loc)',cio_grid_data_tstamp(1, loc_head, var_loc)
+                !write(-1,*)'cio_grid_data_tstamp(2, loc_head,var_loc)',cio_grid_data_tstamp(2, loc_head, var_loc)
+                !write(-1,*)'cio_grid_data_tstamp(2, loc_tail,var_loc)',cio_grid_data_tstamp(2, loc_tail, var_loc)
 
              if ((cio_grid_data_tstamp(1, 2, var_loc) .eq. date) .and.
      &           (cio_grid_data_tstamp(2, 2, var_loc) .eq. time)) then
@@ -6353,8 +6365,10 @@ C   mminlu and num_land_cat are WRF global variables
                 store_beg_ind = cio_grid_data_inx(1,2,var_loc)
                 store_end_ind = cio_grid_data_inx(2,2,var_loc)
 
-                cio_grid_data(store_beg_ind:store_end_ind) =   cio_grid_data(head_beg_ind:head_end_ind) * ratio1
-     &                                                       + cio_grid_data(tail_beg_ind:tail_end_ind) * ratio2
+                
+                cio_grid_data(store_beg_ind:store_end_ind) =  ! cio_grid_data(head_beg_ind:head_end_ind) !* ratio1 +
+     &                                                          cio_grid_data(tail_beg_ind:tail_end_ind) !* ratio2
+
              end if
  
              adj_lvl = 0
@@ -6465,6 +6479,7 @@ C   mminlu and num_land_cat are WRF global variables
                 loc_jdate = cio_grid_data_tstamp(1, loc_tail, var_loc)
                 loc_jtime = cio_grid_data_tstamp(2, loc_tail, var_loc)
                 CALL NEXTIME ( loc_jdate, loc_jtime, loc_tstep )
+
                 call retrieve_time_dep_gridded_data (loc_jdate, loc_jtime, vname)
                 loc_head = head_grid(var_loc)
                 loc_tail = tail_grid(var_loc)
@@ -6887,8 +6902,8 @@ C   mminlu and num_land_cat are WRF global variables
                       lcount = lcount + 1
                    end if
 
-                   cio_grid_data(store_beg_ind:store_end_ind) =   cio_grid_data(head_beg_ind:head_end_ind) * ratio1
-     &                                                          + cio_grid_data(tail_beg_ind:tail_end_ind) * ratio2
+                   cio_grid_data(store_beg_ind:store_end_ind) =  ! cio_grid_data(head_beg_ind:head_end_ind) !* ratio1 +
+     &                                                             cio_grid_data(tail_beg_ind:tail_end_ind) !* ratio2
                 end if
              end if
  

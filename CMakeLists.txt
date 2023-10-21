@@ -93,6 +93,7 @@ target_compile_definitions(CCTM PUBLIC SUBST_FILES_ID="FILES_CTM.EXT"
                                        SUBST_PE_COMM="PE_COMM.EXT"
                                        SUBST_COMM=NOOP_COMM
                                        SUBST_BARRIER=NOOP_BARRIER
+                                       SUBST_HI_LO_BND_PE=NOOP_HI_LO_BND_PE
                                        SUBST_SUBGRID_INDEX=NOOP_SUBGRID_INDEX
                                        AQCHEM=DUMMY_AQCHEM
                                        CONVCLD_ACM=DUMMY_CONVCLD_ACM
@@ -105,6 +106,7 @@ target_compile_definitions(CCTM PUBLIC SUBST_FILES_ID="FILES_CTM.EXT"
 				       WR_INIT=DUMMY_WR_INIT
                                        verbose_aero
 				       verbose_gas
+                                       verbose_cio
                                       # mpas
 				       _AQM_)
 

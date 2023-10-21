@@ -36,6 +36,7 @@ list(APPEND aqm_aqmio_files
 list(APPEND aqm_ioapi_files
     src/io/ioapi/FDESC3.EXT
     src/io/ioapi/PARMS3.EXT
+    src/io/ioapi/IODECL3.EXT
     src/io/ioapi/crlf.F
     src/io/ioapi/currec.f
     src/io/ioapi/currstep.f
@@ -59,16 +60,19 @@ list(APPEND aqm_ioapi_files
     src/io/ioapi/upcase.f
     src/io/ioapi/wkday.F
     src/io/ioapi/yr2day.F
+    src/io/ioapi/daymon.F
     src/io/ioapi/m3exit.F90
     src/io/ioapi/m3mesg.F90
     src/io/ioapi/m3msg2.F90
     src/io/ioapi/m3warn.F90
+    src/io/ioapi/m3err.F
     src/io/ioapi/m3utilio.F90
 )
 
 set(CCTM_ROOT "src/model/CMAQ/CCTM/src")
 set(AERO "${CCTM_ROOT}/aero/aero6")
 set(BIOG "${CCTM_ROOT}/biog/beis4")
+set(MEGAN "${CCTM_ROOT}/biog/megan3")
 set(CLOUD "${CCTM_ROOT}/cloud/acm_ae6")
 set(DEPV "${CCTM_ROOT}/depv/m3dry")
 set(EMIS "${CCTM_ROOT}/emis/emis")
@@ -86,12 +90,14 @@ set(STENEX "${CCTM_ROOT}/STENEX/noop")
 set(UTIL "${CCTM_ROOT}/util/util")
 set(VDIFF "${CCTM_ROOT}/vdiff/acm2_m3dry")
 set(DRIV "${CCTM_ROOT}/driver")
+set(CIO "${CCTM_ROOT}/cio")
 set(localCCTM "src/model/src")
 list(APPEND aqm_CCTM_files
 	${AERO}/AERO_DATA.F
 	${AERO}/aero_driver.F
         ${AERO}/aero_nml_modes.F
 	${AERO}/AEROMET_DATA.F
+        ${AERO}/AERO_EMIS.F
 	${AERO}/AEROSOL_CHEMISTRY.F
 	${AERO}/aero_subs.F
 	${AERO}/coags.f
@@ -111,6 +117,13 @@ list(APPEND aqm_CCTM_files
 	${BIOG}/parsline.f
 	${BIOG}/tmpbeis.F
 	${BIOG}/wrdaymsg.f
+        ${MEGAN}/MEGAN_DEFN.F
+        ${MEGAN}/megan_gspro.F
+        ${MEGAN}/megan_hrno_mod.F
+        ${MEGAN}/megan_fx_mod.f90
+        ${MEGAN}/BDSNP_MOD.F
+        ${MEGAN}/MAP_CV2CB6_AE7.EXT
+        ${MEGAN}/SPC_CB6_AE7.EXT
 	${CLOUD}/hlconst.F
 	${CLOUD}/cldproc_acm.F
 	${CLOUD}/getalpha.F
@@ -144,12 +157,14 @@ list(APPEND aqm_CCTM_files
 	${EMIS}/UDTYPES.F
         ${EMIS}/biog_emis_param_module.F
         ${EMIS}/CMAQ_Control_DESID.nml
-        #${EMIS}/desid_module.F
         ${EMIS}/desid_param_module.F
         ${EMIS}/desid_util.F
         ${EMIS}/desid_vars.F
+        ${EMIS}/desid_module.F
         ${EMIS}/lus_data_module.F
         ${EMIS}/stack_group_data_module.F
+      #  ${EMIS}/PT3D_DEFN.F
+        ${EMIS}/PTMET.F
 	${GAS}/../../reactive_tracers/DEGRADE_PARAMETERS.F
 	${GAS}/../../reactive_tracers/DEGRADE_ROUTINES.F
 	${GAS}/hrdata_mod.F
@@ -219,10 +234,11 @@ list(APPEND aqm_CCTM_files
 	${STENEX}/noop_util_module.f
 	${UTIL}/findex.f
         ${UTIL}/log_header.F
-	${UTIL}/get_env_mod.f90
+	#${UTIL}/get_env_mod.f90
 	${UTIL}/setup_logdev.F
 	${UTIL}/subhdomain.F
 	${UTIL}/UTILIO_DEFN.F
+        #${UTIL}/RUNTIME_VARS.F
         ${UTIL}/util_family_module.F
         ${UTIL}/CMAQ_Control_Misc.nml
         ${DRIV}/ELMO_PROC.F
@@ -237,22 +253,22 @@ list(APPEND aqm_CCTM_files
         ${VDIFF}/VDIFF_DATA.F
 	${VDIFF}/VDIFF_DIAG.F
 	${VDIFF}/VDIFF_MAP.F
-        #${VDIFF}/vdiffacmx.F
-	#${VDIFF}/vdiffproc.F
-        ${VDIFF}/../../biog/megan3/BDSNP_MOD.F
+	${VDIFF}/vdiffproc.F
+        #${CIO}/centralized_io_module.F
 	${localCCTM}/o3totcol.f
-	${localCCTM}/AERO_EMIS.F
-        ${localCCTM}/RUNTIME_VARS.F
+	#${localCCTM}/AERO_EMIS.F
         #${localCCTM}/PTMAP.F
 	#${localCCTM}/PT3D_DATA_MOD.F
-	#${localCCTM}/PT3D_DEFN.F
-	#${localCCTM}/PT3D_FIRE_DEFN.F
-	#${localCCTM}/PT3D_STKS_DEFN.F
+	${localCCTM}/PT3D_DEFN.F
+	${localCCTM}/PT3D_FIRE_DEFN.F
+	${localCCTM}/PT3D_STKS_DEFN.F
+        ${localCCTM}/vdiffacmx.F
 	${localCCTM}/ASX_DATA_MOD.F
 	${localCCTM}/DUST_EMIS.F
 	${localCCTM}/AERO_PHOTDATA.F
-        ${localCCTM}/vdiffacmx.F
-	#${localCCTM}/phot.F
+	${localCCTM}/phot.F
+        ${localCCTM}/RUNTIME_VARS.F
+        ${localCCTM}/get_env_mod.f90
         ${localCCTM}/centralized_io_module.F 
 	${localCCTM}/centralized_io_util_module.F
 )
