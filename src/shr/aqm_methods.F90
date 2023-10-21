@@ -1705,7 +1705,7 @@ LOGICAL FUNCTION WRITE3_REAL4D( FNAME, VNAME, JDATE, JTIME, BUFFER )
           buffer(:,:,:,p_pm25at + s)
       end do
       ! add AOD here; point to the 4th species in ELMO_INST 
-      !stateOut % aod = BUFFER(:,:,1,4)
+      stateOut % aod = BUFFER(:,:,1,4)
 
     END IF
 
