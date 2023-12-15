@@ -4,8 +4,9 @@
 
       IMPLICIT NONE
 
-      REAL,    ALLOCATABLE :: VFRAC( :,:,: ) ! vertical fraction
-      REAL,    ALLOCATABLE :: BUFFER( : ) ! emission buffer
+      REAL,    ALLOCATABLE :: VFRAC( :,:,: )  ! vertical fraction
+      REAL,    ALLOCATABLE :: BUFFER( : )     ! emission buffer
+      REAL,    ALLOCATABLE :: BUFFER_TOO( : ) ! emission buffer for POC
 
 C Species names from input file used for point source non-PM emissions mapping
       INTEGER, ALLOCATABLE :: PTEM_FIRE_MAP( : )
@@ -112,6 +113,11 @@ C get point source emission mapping
          ALLOCATE ( BUFFER( NCOLS * NROWS ), STAT = IOS )
          CALL CHECKMEM( IOS, 'BUFFER', PNAME )
          BUFFER = 0.0   ! array
+
+         ALLOCATE ( BUFFER_TOO( NCOLS * NROWS ), STAT = IOS )
+         CALL CHECKMEM( IOS, 'BUFFER_TOO', PNAME )
+         BUFFER_TOO = 0.0   ! array
+
 
          SUCCESS = .TRUE.; RETURN
 
@@ -220,13 +226,13 @@ C                plume rise is disabled by default
 C        ... gas species ...        
 
          IS_NOT_NVPOA = ( INDEX( MECHNAME, 'NVPOA' ) .EQ. 0 )
-
-         DO S = 1, N_GSPC_FIRE_EMIS
+         DO S = 1, SIZE(PTEM_FIRE_MAP)
             M = PTEM_FIRE_MAP( S )
             IF ( M .GT. 0 ) THEN
                N = PTEM_MAP( S )
 c           IF ( N .GT. 0 ) THEN
                BUFFER = 0.0
+               BUFFER_TOO = 0.0
                CALL AQM_EMIS_READ( ETYPE, EM % TABLE( M, 1 ),
      &                             BUFFER, RC=LOCALRC )
                IF ( AQM_RC_CHECK( LOCALRC, MSG="Failure while reading "
@@ -236,11 +242,12 @@ c           IF ( N .GT. 0 ) THEN
 C              Read Non-Carbon Organic Matter too if POC is Requested
                SAVE_POC = .FALSE.
                IF ( IS_NOT_NVPOA .AND. EM % TABLE( M, 1 ) .EQ. 'POC' ) THEN
-                  CALL AQM_EMIS_READ( ETYPE, 'PNCOM', BUFFER, RC=LOCALRC )
+                  CALL AQM_EMIS_READ( ETYPE, 'PNCOM', BUFFER_TOO, RC=LOCALRC )
                   IF ( AQM_RC_CHECK( LOCALRC,
      &               MSG="Failure while reading PNCOM" //
      &               " from " // TRIM( ETYPE ) // " emissions",
      &               FILE=__FILE__, LINE=__LINE__)) RETURN
+                  BUFFER=BUFFER+BUFFER_TOO
                   SAVE_POC = IS_NOT_NVPOA
                END IF
                DO L = 1, EMLYRS
