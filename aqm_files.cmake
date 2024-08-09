@@ -76,7 +76,7 @@ set(MEGAN "${CCTM_ROOT}/biog/megan3")
 set(CLOUD "${CCTM_ROOT}/cloud/acm_ae6")
 set(DEPV "${CCTM_ROOT}/depv/m3dry")
 set(EMIS "${CCTM_ROOT}/emis/emis")
-set(GAS "${CCTM_ROOT}/gas/ebi_cb6r5_ae7_aq")
+set(GAS "${CCTM_ROOT}/gas/ros3")
 set(GRID "${CCTM_ROOT}/grid/cartesian")
 set(ICL "${CCTM_ROOT}/ICL/fixed")
 set(INIT "${CCTM_ROOT}/init")
@@ -167,16 +167,15 @@ list(APPEND aqm_CCTM_files
         ${EMIS}/PTMET.F
 	${GAS}/../../reactive_tracers/DEGRADE_PARAMETERS.F
 	${GAS}/../../reactive_tracers/DEGRADE_ROUTINES.F
-	${GAS}/hrdata_mod.F
-	${GAS}/hrdriver.F
-	${GAS}/hrg1.F
-	${GAS}/hrg2.F
-	${GAS}/hrg3.F
-	${GAS}/hrg4.F
-	${GAS}/hrinit.F
-	${GAS}/hrprodloss.F
-	${GAS}/hrrates.F
-	${GAS}/hrsolver.F
+	${GAS}/rbdata_mod.F
+	#${GAS}/rbdriver.F
+	${GAS}/rbdecomp.F
+	${GAS}/rbfeval.F
+	${GAS}/rbinit.F
+	${GAS}/rbjacob.F
+	${GAS}/rbsolve.F
+	${GAS}/rbsolver.F
+	${GAS}/rbsparse.F
 	${GAS}/../../reactive_tracers/DEGRADE_SETUP_TOX.F
 	${GRID}/GRID_CONF.F
 	${GRID}/HGRD_DEFN.F
@@ -259,6 +258,8 @@ list(APPEND aqm_CCTM_files
 	#${localCCTM}/AERO_EMIS.F
         #${localCCTM}/PTMAP.F
 	#${localCCTM}/PT3D_DATA_MOD.F
+	#rbdriver.F has a typo in CMAQ.Put it back to {GAS} if they solve it in the future
+	${localCCTM}/rbdriver.F
 	${localCCTM}/PT3D_DEFN.F
 	${localCCTM}/PT3D_FIRE_DEFN.F
 	${localCCTM}/PT3D_STKS_DEFN.F
