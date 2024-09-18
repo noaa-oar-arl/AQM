@@ -528,12 +528,18 @@ contains
                do IRULE = 1,N_RULE
                  CALL UPCASE( DESID_RULES_NML( IRULE )%EMVAR )
                  if (DESID_EMVAR_TABLE( n )%NAME .EQ. DESID_RULES_NML( IRULE)%EMVAR ) then
-                    CALL UPCASE( DESID_RULES_NML( IRULE )%PHASE )
+                   if (DESID_RULES_NML( IRULE )%BASIS .EQ. 'UNIT') then
+                     CALL UPCASE( DESID_RULES_NML( IRULE )%PHASE )
                        if (DESID_RULES_NML( IRULE )%PHASE .EQ. 'GAS') then
                           em % table(spc,2) = "MOL/S" 
                        else
                           em % table(spc,2) = pmem_units
                        endif
+                   else if (DESID_RULES_NML( IRULE )%BASIS .EQ. 'MASS') then
+                           em % table(spc,2) = pmem_units
+                   else !BASIS can be set 'MOLE', but not in the default namelist
+                           em % table(spc,2) = "MOL/S"
+                   end if 
                  endif
                end do
 

@@ -175,10 +175,11 @@ C             LOGDEV = SETUP_LOGDEV()
 C set number of emissions layers depending on whether plumerise is on
 
             CALL AQM_EMIS_DESC( ETYPE, NLAYS=EMLYRS )
-            PTLAYS = EMLYRS
-
+           
             FIRSTIME = .FALSE.
          END IF
+          
+         PTLAYS = EMLYRS
 
 C Allocate Buffer space for Reading Emissions
          NSRC = SIZE( EM % IJMAP )
