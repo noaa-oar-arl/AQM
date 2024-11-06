@@ -1144,7 +1144,7 @@ LOGICAL FUNCTION  XTRACT3 ( FNAME, VNAME,                           &
       do r = row0, row1
         do c = col0, col1
           k = k + 1
-          buffer(k) = stateIn % fvtype(c,r,lu_index)
+          if (int(stateIn % vtype(c,r)) == lu_index) buffer(k) = 1.0
         end do
       end do
     else
