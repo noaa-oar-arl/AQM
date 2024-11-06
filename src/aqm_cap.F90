@@ -53,7 +53,7 @@ module AQM
       "surface_cell_area                        ", &
       "surface_snow_area_fraction               ", &
       "temperature_of_soil_layer                ", &
-      "vtype                                    ", &
+      "vtype                                    "  &
       ! "vegetation_type_frac                     "  &
 !      "forest_canopy_height                     ", &
 !      "forest_fraction                          ", &
