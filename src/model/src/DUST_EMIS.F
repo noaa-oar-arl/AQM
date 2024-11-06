@@ -765,6 +765,7 @@ C-----------------------------------------------------------------------
          if ( firstime ) then
             firstime = .false.
             if ( fengsha ) then
+              ! Get fengsha alpha value
               dust_alpha = 0.05    ! default
               dust_alpha = envreal( ctm_wbdust_fengsha_alpha,
      &        'Emission global scaling factor for FENGSHA dust scheme',
@@ -774,6 +775,8 @@ C-----------------------------------------------------------------------
                call m3exit( pname, jdate, jtime, xmsg, xstat1 )
             end if
             write(xmsg,'("Using FENGSHA alpha = ",g12.5)') dust_alpha
+
+            ! Get fengsha drag opt
             call m3msg2 ( xmsg )
                drag_opt = 1 ! default
                drag_opt = envreal( ctm_wbdust_fengsha_dragopt,
@@ -783,7 +786,7 @@ C-----------------------------------------------------------------------
                  xmsg = '*** Failure retrieving FENGSHA drag opt'
                  call m3exit( pname, jdate, jtime, xmsg, xstat1 )
               end if
-              write(xmsg,'("Using FENGSHA drag_opt = ",g12.5)') drag_opt
+              write(xmsg,'("Using FENGSHA dust_drag = ",g12.5)') drag_opt
               call m3msg2 ( xmsg )
             else !this is default case
                 allocate ( ustr( ncols,nrows,n_dlcat+1 ),
