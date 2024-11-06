@@ -694,7 +694,7 @@ logical function interpx( fname, vname, pname, &
       do r = row0, row1
         do c = col0, col1
           k = k + 1
-          if (int(stateIn % stype(c,r)) == lu_index) buffer(k) = 1.0
+          if (int(stateIn % vtype(c,r)) == lu_index) buffer(k) = 1.0
         end do
       end do
     else
@@ -800,6 +800,8 @@ logical function interpx( fname, vname, pname, &
         p2d => stateIn % fice
       case ("SLTYP")
         p2d => stateIn % stype
+      case ("DLUSE")
+        p2d => stateIn % vtype
       case ("SNOCOV")
         p2d => stateIn % sncov
       case ("SOIM1")
@@ -1133,23 +1135,6 @@ LOGICAL FUNCTION  XTRACT3 ( FNAME, VNAME,                           &
     if (aqm_rc_check(localrc, msg="Failure to retrieve grid coordinates", &
       file=__FILE__, line=__LINE__)) return
 
-!    if (vname(1:7) == 'LUFRAC_') then
-!      if (aqm_rc_test((LAY0.NE.1).OR.(LAY1.NE.1), &
-!        msg=TRIM(VNAME)//" is 2D. LAY0 and LAY1 must be 1", &
-!        file=__FILE__, line=__LINE__)) return
-!      lu_index = 0
-!      read(vname(8:), *, iostat=localrc) lu_index
-!      if (aqm_rc_test(localrc /= 0, msg="Failure to identify LU_INDEX", &
-!        file=__FILE__, line=__LINE__)) return
-!      k = 0
-!      do r = row0, row1
-!        do c = col0, col1
-!          k = k + 1
-!          if (int(stateIn % stype(c,r)) == lu_index) buffer(k) = 1.0
-!        end do
-!      end do
-!    end if
-
     if (vname(1:7) == 'LUFRAC_') then
       lu_index = 0
       read(vname(8:9), *, iostat=localrc) lu_index
@@ -1159,7 +1144,7 @@ LOGICAL FUNCTION  XTRACT3 ( FNAME, VNAME,                           &
       do r = row0, row1
         do c = col0, col1
           k = k + 1
-          if (int(stateIn % vtype(c,r)) == lu_index) buffer(k) = 1.0
+          buffer(k) = stateIn % fvtype(c,r,lu_index)
         end do
       end do
     else
@@ -1191,6 +1176,14 @@ LOGICAL FUNCTION  XTRACT3 ( FNAME, VNAME,                           &
           end do
         case ('MSFX2')
           buffer(1:lbuf) = 1.
+        case ('DLUSE')
+          k = 0
+          do r = row0, row1
+           do c = col0, col1
+            k = k + 1
+            buffer(k) = stateIn % vtype(c,r)
+           end do
+          end do
         case ('PURB')
         case default
           return

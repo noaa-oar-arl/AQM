@@ -604,6 +604,18 @@ contains
               line=__LINE__, &
               file=__FILE__)) &
               return  ! bail
+          case ("vegetation_type")
+            call ESMF_FieldGet(field, localDe=localDe, farrayPtr=stateIn % vtype, rc=rc)
+            if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+              line=__LINE__, &
+              file=__FILE__)) &
+              return  ! bail
+         case ("vegetation_type_frac")
+            call ESMF_FieldGet(field, localDe=localDe, farrayPtr=stateIn % fvtype, rc=rc)
+            if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+              line=__LINE__, &
+              file=__FILE__)) &
+              return  ! bail
           case ("surface_cell_area")
             call ESMF_FieldGet(field, localDe=localDe, farrayPtr=stateIn % area, rc=rc)
             if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &

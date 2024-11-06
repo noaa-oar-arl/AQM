@@ -19,7 +19,7 @@
 
 C:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
       module dust_emis
-     
+
 C-----------------------------------------------------------------------
 C Description:
 C * Extracts selected landuse categories from BELD01 and BELD03 and merges
@@ -58,8 +58,8 @@ C                       Updated the dust diag output file accordingly.
 C  8 Jan 16 J.Young: Changes for computational efficiency
 C  2 Feb 16 J.Young: move dust aero speciation table to AERO_DATA
 C  01 Feb 19 D.Wong: Implemented centralized I/O approach, removed all MY_N clauses
-C  9 Jul 19 Gilliam: Removed a lot of old commented out legacy tables. 
-C                    Removed the direct read of FPAR MODIS file as this data comes 
+C  9 Jul 19 Gilliam: Removed a lot of old commented out legacy tables.
+C                    Removed the direct read of FPAR MODIS file as this data comes
 C                    directly from WRF LSM models that have access to MODIS veg data now.
 C                    Number of soil types fixed to 16 to match WRF and tables updated.
 C  3 Mar 22 Gilliam and Willison: Removed fugitive dust capture from canopies
@@ -71,7 +71,7 @@ C-----------------------------------------------------------------------
       use aero_data
       use desid_vars
 
-      implicit none 
+      implicit none
 
       public ndust_spc, dust_spc,
      &       dust_emis_init, get_dust_emis
@@ -114,6 +114,8 @@ C Number of soil types: For WRF there are 16 types;
 
 C Variables for FENGSHA dust scheme
       real, save :: dust_alpha    ! tuning parameter for FENGSHA dust emission flux
+      integer, save :: drag_opt
+      real, save :: drylimit_factor
 
 C Variables for the windblown dust diagnostic file:
       integer, parameter :: fndust_diag = 17 ! number of fixed diagnostic output vars
@@ -161,7 +163,7 @@ C                 ----------------    --------    ------------------------------
      & diag_type( 'ANUMK           ', 's-1', 'coarse mode number                         '),
      & diag_type( 'ASRFJ           ', 'm2 s-1   ', 'accumulation mode surface area             '),
      & diag_type( 'ASRFK           ', 'm2 s-1   ', 'coarse mode surface area                   ')/)
-  
+
 C Module shared variables:
       real, allocatable, save :: wmax  ( :,: )   ! max adsorb water percent
       real, allocatable, save :: kvh   ( :,:,: ) ! ratio of vertical flux / horizontal (k factor)
@@ -219,7 +221,7 @@ C-----------------------------------------------------------------------
 
          CALL LOG_MESSAGE( LOGDEV, 'Initialize Wind-Blown Dust Emissions' )
 
-C...Populate Master Emissions Map Vector So That Diagnostics 
+C...Populate Master Emissions Map Vector So That Diagnostics
 C   can be printed in EMIS_MAP
          DESID_EMVAR( IDUSTSRM )%len = ndust_spc*2
          Allocate( DESID_EMVAR( IDUSTSRM )%arry( ndust_spc*2 ) )
@@ -232,11 +234,11 @@ C   can be printed in EMIS_MAP
          Allocate( DESID_EMVAR( IDUSTSRM )%lareaadj( ndust_spc*2 ) )
          DESID_EMVAR( IDUSTSRM )%arry( : ) = 'NOT_AVAILABLE'
          do i = 1,ndust_spc
-            IF ( dust_spc( i )%spcfac(1) .NE. 0.0 ) 
-     &         DESID_EMVAR( IDUSTSRM )%arry( i )  = 
+            IF ( dust_spc( i )%spcfac(1) .NE. 0.0 )
+     &         DESID_EMVAR( IDUSTSRM )%arry( i )  =
      &                    'PMFINE_' // dust_spc(i)%name
-            IF ( dust_spc( i )%spcfac(2) .NE. 0.0 ) 
-     &         DESID_EMVAR( IDUSTSRM )%arry( i+ndust_spc )  = 
+            IF ( dust_spc( i )%spcfac(2) .NE. 0.0 )
+     &         DESID_EMVAR( IDUSTSRM )%arry( i+ndust_spc )  =
      &                    'PMCOARSE_' // dust_spc(i)%name
             DESID_EMVAR( IDUSTSRM )%mw( i )  = dust_spc(i)%mw
             DESID_EMVAR( IDUSTSRM )%mw( i+ndust_spc )  = dust_spc(i)%mw
@@ -247,15 +249,15 @@ C   can be printed in EMIS_MAP
          DESID_EMVAR( IDUSTSRM )%basis( : ) = 'MASS'
          DESID_EMVAR( IDUSTSRM )%larea( : ) = .FALSE.
          DESID_EMVAR( IDUSTSRM )%lareaadj( : ) = .FALSE.
- 
+
 C...Count the number of mass emissions species
         n_mass_emissions = 0
         do i = 1, ndust_spc
            do j = 1, 2
-              if( dust_spc( i )%spcfac( j )  .gt. 0. ) 
-     &               n_mass_emissions = n_mass_emissions + 1  
+              if( dust_spc( i )%spcfac( j )  .gt. 0. )
+     &               n_mass_emissions = n_mass_emissions + 1
            end do
-        end do                     
+        end do
         allocate ( dustoutm( ndust_spc*2,ncols,nrows ),
      &              dustoutn( 2,ncols,nrows ),
      &              dustouts( 2,ncols,nrows ), stat = status )
@@ -274,25 +276,25 @@ C Allocate emissions array
          end if
 
          if ( fengsha ) then
- 
+
 C Disable diagnostic output if FENGSHA is used
           dustem_diag = .false.
- 
+
 C Allocate private arrays
           !allocate( tfb( ncols,nrows ), stat = status )  !tfa and tfb
           !were removed in most recent note.
- 
+
           if ( status .ne. 0 ) then
              xmsg = '*** Failure allocating WMAX or TFB'
              call m3warn( pname, jdate, jtime, xmsg )
              success = .false.; return
-          end if 
+          end if
 C Initialize land use/cover variables
           if ( .not. lus_init( jdate, jtime ) ) then
              xmsg = 'Failure initializing land use module'
              call m3exit( pname, jdate, jtime, xmsg, xstat2 )
           end if
- 
+
           else
 
 C Allocate private arrays
@@ -332,7 +334,7 @@ C Set up variable diagnostic names (from LUS_DEFN)
             vdiagnm_rough = diag_type( ' ', ' ', ' ' )  ! array assignment
 
 C...Set Up Diagnostic Species Variables
-            ndust_diag = fndust_diag + 5 * n_dlcat + n_mass_emissions 
+            ndust_diag = fndust_diag + 5 * n_dlcat + n_mass_emissions
 
             do i = 1, n_dlcat
                truncnm = vnmld( i )%desc   ! char( 10 )
@@ -410,7 +412,7 @@ C Build the complete diagnostic name array                     n for MODIS NOAH
             diagnm( n ) = fdiagnm( 7 )    ! Cropland_Rough
 
             n = n - 7                     ! add remaining variables in fdiagnm
-            do i = 8, fndust_diag 
+            do i = 8, fndust_diag
                idiag = i+n
                diagnm( idiag ) = fdiagnm( i )
             end do
@@ -418,42 +420,42 @@ C Build the complete diagnostic name array                     n for MODIS NOAH
 C...append diagnostic variables with mass emissions species
             do j = 1, 2
                do i = 1, ndust_spc
-                  if( dust_spc( i )%spcfac( j ) .eq. 0. ) cycle 
+                  if( dust_spc( i )%spcfac( j ) .eq. 0. ) cycle
                     n = 0
                     do k = 1, idiag   ! determine if dust emissions is already added to diagnostic output
-                       if( trim( DESID_EMVAR( IDUSTSRM )%ARRY( (j-1)*ndust_spc+i )) 
+                       if( trim( DESID_EMVAR( IDUSTSRM )%ARRY( (j-1)*ndust_spc+i ))
      &                     .Eq. diagnm( k )%var ) Then
                          n = k
                          exit
                      end if
                   end do
-                  if( n .gt. 0  ) cycle ! skip already added 
-                  
+                  if( n .gt. 0  ) cycle ! skip already added
+
                   idiag = idiag + 1
-                  diagnm( idiag )%var = DESID_EMVAR( IDUSTSRM )%ARRY( (j-1)*ndust_spc+i ) 
+                  diagnm( idiag )%var = DESID_EMVAR( IDUSTSRM )%ARRY( (j-1)*ndust_spc+i )
                   diagnm( idiag )%units = 'g/m**3/s'
 
                   Select Case( j ) ! assumes only two aerosol modes dust emissions
                      Case( 1 )
-                        diagnm( idiag )%desc = 'fine mode' 
+                        diagnm( idiag )%desc = 'fine mode'
                      Case( 2 )
-                        diagnm( idiag )%desc = 'coarse mode' 
+                        diagnm( idiag )%desc = 'coarse mode'
                   end Select
                   diagnm( idiag )%desc = Trim( diagnm( idiag )%desc )
-     &                                   // ' emissions for '  
+     &                                   // ' emissions for '
      &                                   // Trim( dust_spc( i )%description )
                end do
             end do
-            
+
 ! remove unused space in diagnm by deallocated and reallocating to idiag value
             allocate( diagnm_swap( ndust_diag ), stat = status )
             if ( status .ne. 0 ) then
                xmsg = '*** Failure allocating DIAGNM_SWAP'
                call m3warn( pname, jdate, jtime, xmsg )
-               
+
                success = .false.; return
             end if
-            diagnm_swap = diagnm 
+            diagnm_swap = diagnm
 
             deallocate( diagnm )
 
@@ -471,7 +473,7 @@ C...append diagnostic variables with mass emissions species
      &         call opdust_emis ( stdate, sttime, tstep, ndust_diag, diagnm )
 
          end if   ! dustem_diag
-         
+
          end if !dust scheme
 
          l2sgj = log( sigj ) * log( sigj )
@@ -608,14 +610,14 @@ C Arguments:
          integer, intent( in ) :: tstep( 3 )   ! output time step, sync step, 2way step
          real,    intent( in ) :: rjacm( ncols,nrows ) ! reciprocal Jacobian [1/m]
          real,    intent( in ) :: cellhgt      ! grid-cell height [sigma]
-         logical, intent( in ) :: l_desid_diag ! flag determining whether or not DESID 
+         logical, intent( in ) :: l_desid_diag ! flag determining whether or not DESID
                                                !   is in diagnostic mode
 
 C Includes:
          include SUBST_FILES_ID  ! file name parameters
 
 C External Functions:
-               
+
 C Parameters:
          integer, parameter :: ndp = 4     ! number of soil texture type particle sizes:
                                            !  1  Coarse sand
@@ -636,8 +638,8 @@ C Parameters:
          real, parameter :: sigb_mb  = sigb * mb   ! = 0.5
          real, parameter :: betab_mb = betab * mb  ! = 45.0
 
-         character( 24 ) :: ctm_wbdust_fengsha_alpha = 'CTM_WBDUST_FENGSHA_ALPHA' ! env var to
-                                                ! retrieve FENGSHA scaling factor
+         character( 24 ) :: ctm_wbdust_fengsha_alpha = 'CTM_WBDUST_FENGSHA_ALPHA' ! env var to retrieve FENGSHA scaling factor
+         character( 24 ) :: ctm_wbdust_fengsha_dragopt = 'CTM_WBDUST_FENGSHA_DRAGOPT' ! env var to retrieve FENGSHA Drag Opt
 
          character( 16 ) :: pname = 'GET_DUST_EMIS'
          character( 16 ) :: vname
@@ -750,7 +752,7 @@ C   Chatenet et al. [Sedimentology,1996] and Menut et al. [JGR,2013]
      &                2.0E-6 /)   ! Clay
 C---Soil texture vars of the grid cell
          real :: soiltxt_gcell( ndp )
-         real :: clay, csand, fmsand, sandf, siltf
+         real :: clay, csand, fmsand, sandf, siltf, drag
 
 
 #ifdef verbose_wbdust
@@ -763,15 +765,25 @@ C-----------------------------------------------------------------------
          if ( firstime ) then
             firstime = .false.
             if ( fengsha ) then
-              dust_alpha = 0.05    ! default 
+              dust_alpha = 0.05    ! default
               dust_alpha = envreal( ctm_wbdust_fengsha_alpha,
      &        'Emission global scaling factor for FENGSHA dust scheme',
      &          dust_alpha, status )
+            if ( status .ne. 0 ) then
+               xmsg = '*** Failure retrieving FENGSHA scaling factor'
+               call m3exit( pname, jdate, jtime, xmsg, xstat1 )
+            end if
+            write(xmsg,'("Using FENGSHA alpha = ",g12.5)') dust_alpha
+            call m3msg2 ( xmsg )
+               drag_opt = 1 ! default
+               drag_opt = envreal( ctm_wbdust_fengsha_dragopt,
+     &         'FENGSHA drag parititon option',
+     &         drag_opt, status )
               if ( status .ne. 0 ) then
-                 xmsg = '*** Failure retrieving FENGSHA scaling factor'
+                 xmsg = '*** Failure retrieving FENGSHA drag opt'
                  call m3exit( pname, jdate, jtime, xmsg, xstat1 )
               end if
-              write(xmsg,'("Using FENGSHA alpha = ",g12.5)') dust_alpha
+              write(xmsg,'("Using FENGSHA drag_opt = ",g12.5)') drag_opt
               call m3msg2 ( xmsg )
             else !this is default case
                 allocate ( ustr( ncols,nrows,n_dlcat+1 ),
@@ -796,10 +808,20 @@ C---Select dust scheme
             soimt( c,r )   = 0.0
             fmoit( c,r )   = 0.0
 
+            select case (drag_opt)
+               case(2)
+                  drag = DarmenovaDragPartition(Met_Data%drag( c,r ), Met_Data%VEG( c,r ), 0.4)
+               case(3)
+                  drag = LeungDragPartition(Met_Data%drag( c,r ), Met_Data%LAI( c,r ), Met_Data%VEG(c,r), 0.4)
+               CASE DEFAULT
+                  drag = Met_Data%drag(c,r)
+            end select
+
+
             if ( (Grid_Data%lwmask( c,r ) .gt. 0.0) .and.
      &        (Met_Data%rn( c,r ) + Met_Data%rc( c,r ) .le. 0.0254) .and. ! rn, rc = [cm]
      &        (Met_Data%snocov( c,r ) .lt. 0.001) .and.
-     &        (Met_Data%drag( c,r ) .gt. 0.0) ) then ! less than 0.1% snow coverage
+     &        (R .gt. 0.0) ) then ! less than 0.1% snow coverage
 
 C Calculate maximum amount of the adsorbed water
 C    w` = 0.0014(%clay)**2 + 0.17(%clay) - w` in %
@@ -823,30 +845,30 @@ C Calculate Vertical to Horizontal Mass Flux Ratio
 C -- This is based on MB95
                if ( Met_Data%clayf(c,r) < 0.2) then
                   v2h = 10. ** (13.4 * Met_Data%clayf( c,r ) - 6.0)
-               else        
+               else
                   v2h = 4.0e-4
                endif
 C Horizontal Flux
                hflux = dust_hflux_fengsha( Met_Data%USTAR( c,r ),
      &                                     fmoit( c,r ),
-     &                                     Met_Data%drag( c,r ),
+     &                                     drag,
      &                                     Met_Data%uthr( c,r ),
      &                                     1.0, ! ssm = 1
      &                                     Met_Data%dens1( c,r ) )
- 
+
                 vflux = v2h * hflux         !  [g/m**2/s]
- 
+
                 rlay1hgt = rjacm ( c,r ) / cellhgt
- 
+
                 dust_em( c,r ) = dust_alpha * vflux * rlay1hgt! *tfa(c,r) * tfb(c,r)
- 
+
             end if   ! if rain & land & snow & drag
- 
+
           end do   ! c
           end do   ! r
- 
+
           else     ! default dust scheme
-  
+
 C---Get Julian day number in year
          jday = float( mod( jdate,1000 ) )
 
@@ -902,7 +924,7 @@ C   Check PX soil texture data flag and log a message if or if not used in WB du
          end if
 
 C --------- ###### Start Main Loop ###### ---------
- 
+
          do r = 1, nrows
          do c = 1, ncols
             dust_em( c,r ) = 0.0
@@ -916,7 +938,7 @@ C --------- ###### Start Main Loop ###### ---------
                fruf( c,r,m ) = 0.0
                kvh ( c,r,m ) = 0.0
             end do
- 
+
             rlay1hgt = rjacm ( c,r ) / cellhgt
 
 
@@ -927,8 +949,8 @@ C--  If value from WRF is from WRFV4.1 PX LSM csand_px, etc use those
 
             if (.not. WRF_V4P) then
 C    Adjust WRF soil definitions to match internal Menut et al. [JGR,2013] Table
-             if ( j .gt. 4 ) j = j + 1   
-             if ( j .gt. 13 ) j = 13   
+             if ( j .gt. 4 ) j = j + 1
+             if ( j .gt. 13 ) j = 13
             end if
 
             if(PXSOIL_AVAIL) then
@@ -952,7 +974,7 @@ C-- high resolution MODIS veg data is availiable and can be used in PX with pxls
             vegfree = 1.0 - vegfrac( c,r )
             lambdav = -0.35 * log( vegfree ) ! Shao et al. [Aus. J. Soil Res.,1996]
 
-C---Dust possiblity only if 1. not over water 
+C---Dust possiblity only if 1. not over water
 C                           2. rain < 1/100 in. (1 in. = 2.540 cm)
 C                           3. not snow-covered
 C                           4. if soimt <= limit
@@ -974,7 +996,7 @@ C    Fecan et al. [1999,Annales Geophys.,17,144-157]
 !              write( logdev,'( 2x, a, i8.6, f12.5 )' ) 'max wmax:', jtime, maxval( wmax )
 
 C Change soil moisture units from volumetric (m**3/m**3) to gravimetric (Kg/Kg)
-               soimt( c,r ) = Met_Data%soim1( c,r ) 
+               soimt( c,r ) = Met_Data%soim1( c,r )
      &                      * 1000.0 / ( 2650.0 * ( 0.511 + 0.126 * sandf  ) )
 
                if ( soimt( c,r ) .le. soilml1( j ) ) then
@@ -1044,9 +1066,9 @@ C   First, mapping soil types into 4 main soil types following Kang et al. [JGR,
                   do m = 1, n_dlcat     ! desert type landuse category
                      elus( c,r,m ) = ladut( c,r,m ) * vegfree   ! desert land [%]
                   end do
- 
+
 C ------- Start Loop Over Erodible Landuse ----
- 
+
                   do m = 1, n_dlcat+1   ! desert type & crop landuse categories
 
                      if ( elus( c,r,m ) .gt. 100.0 .or. elus( c,r,m ) .lt. 0.0 ) then
@@ -1062,25 +1084,25 @@ C ------- Start Loop Over Erodible Landuse ----
 
 C---New parametrization for surface roughness by H. Foroutan - Oct. 2015
                         if ( lambda .le. 0.2 ) then
-                           z0 = 0.96  * ( lambda ** 1.07 )  * vegheight 
+                           z0 = 0.96  * ( lambda ** 1.07 )  * vegheight
                         else
-                           z0 = 0.083 * ( lambda ** ( -0.46 ) ) * vegheight 
+                           z0 = 0.083 * ( lambda ** ( -0.46 ) ) * vegheight
                         end if
 
-C---Calculate friction velocity (U*) at the surafce applicable to dust emission 
+C---Calculate friction velocity (U*) at the surafce applicable to dust emission
                         ustr( c,r,m ) = karman * Met_Data%WSPD10( c,r ) / log ( 10.0 / z0 )
 
 C---Roughness effect on U*t (Drag partitioning)
 C   Xi and Sokolik [JGR,2015]
                         fruf2  = ( 1.0 - sigv_mv  * lambdav )
      &                     *     ( 1.0 + betav_mv * lambdav )
-     &                     *     ( 1.0 - sigb_mb  * lambdab( n ) / vegfree ) 
+     &                     *     ( 1.0 - sigb_mb  * lambdab( n ) / vegfree )
      &                     *     ( 1.0 + betab_mb * lambdab( n ) / vegfree )
 
                         if( fruf2 .gt. 1.0 ) then
 
                            fruf( c,r,m ) = sqrt( fruf2 )
-                        else 
+                        else
                            fruf( c,r,m ) = 10.0
                         end if
 
@@ -1112,9 +1134,9 @@ C---Vert-to-Horiz dust flux ratio : Kang et al. [JGR, 2011] : Eq. (12)
                      dust_em( c,r ) = dust_em( c,r ) + qam( c,r,m )
 
                   end do   ! m landuse
- 
+
 C ------- End Loop Over Erodible Landuse ----
- 
+
 
                end if   ! if soil moisture
             end if   ! if rain & land & snow
@@ -1125,11 +1147,11 @@ C ------- End Loop Over Erodible Landuse ----
 C --------- ###### End Main Loop ##### ---------
 
 #ifdef verbose_wbdust
-         write( logdev,'( /5x, a, 1x, 2i8 )' ) 'dry hit count, 
+         write( logdev,'( /5x, a, 1x, 2i8 )' ) 'dry hit count,
      &                                          out of total cells:',
      &                                          dryhit, (c-1)*(r-1)
 #endif
-         end if !dust scheme 
+         end if !dust scheme
 
          do r = 1, nrows
          do c = 1, ncols
@@ -1140,7 +1162,7 @@ C J/K mass emis rate [g/s]  (edust( 1 ) not used)
 
             do n = 1,2
                do v = 1, ndust_spc
-                  dustoutm( (n-1)*ndust_spc+v,c,r ) = 
+                  dustoutm( (n-1)*ndust_spc+v,c,r ) =
      &                     edust( n ) * dust_spc( v )%spcfac( n )
                end do
             end do
@@ -1159,13 +1181,13 @@ C 2nd moment multiplied by PI to obtain the surface area emissions rate.
             dustouts( 2,c,r ) = m3k * factsrfk
 
 ! Propagate Number and Surface Area Scaling Factors back to Emissions
-! Module so that the dust emissions can be scaled appropriately            
-            ISD = INDEX1( 'FINE', DESID_STREAM_AERO( IDUSTSRM )%LEN, 
+! Module so that the dust emissions can be scaled appropriately
+            ISD = INDEX1( 'FINE', DESID_STREAM_AERO( IDUSTSRM )%LEN,
      &                    DESID_STREAM_AERO( IDUSTSRM )%NAME )
             DESID_STREAM_AERO( IDUSTSRM )%FACNUM( ISD,2 ) = FACTNUMJ
             DESID_STREAM_AERO( IDUSTSRM )%FACSRF( ISD,2 ) = FACTSRFJ
-            
-            ISD = INDEX1( 'COARSE', DESID_STREAM_AERO( IDUSTSRM )%LEN, 
+
+            ISD = INDEX1( 'COARSE', DESID_STREAM_AERO( IDUSTSRM )%LEN,
      &                    DESID_STREAM_AERO( IDUSTSRM )%NAME )
             DESID_STREAM_AERO( IDUSTSRM )%FACNUM( ISD,3 ) = FACTNUMK
             DESID_STREAM_AERO( IDUSTSRM )%FACSRF( ISD,3 ) = FACTSRFK
@@ -1219,7 +1241,7 @@ C 2nd moment multiplied by PI to obtain the surface area emissions rate.
 ! accum and coarse mode surface area density emissions
                diagv( n+3 ) = dustouts( 1,c,r )
                diagv( n+4 ) = dustouts( 2,c,r )
-              
+
                n = n + 4
                m = 0
                do v = 1, ndust_spc
@@ -1317,7 +1339,6 @@ C Then reset the emissions array and local write counter.
 C=======================================================================
          function dust_hflux( ndp, dp, soiltxt, fmoit, fruf, ustr, sd_ep, dens )
      &      result( hflux )
-
 C usage: hflux = dust_flux( ndp, dp,
 C                           soiltxt2( : ),
 C                           fmoit( c,r ),
@@ -1400,8 +1421,170 @@ C---Horiz. Flux from Owen (1964)
             u_sum = rustar * u_thresh
 
             hflux = max(0., rustar - u_thresh) * u_sum * u_sum *fac * ssm
- 
+
          end function dust_hflux_fengsha
+C=======================================================================
+         real function DarmenovaDragPartition(Lc, vegfrac, thresh)
+         ! !USES:
+            implicit NONE
+
+         ! !INPUT PARAMETERS:
+            real, intent(in) :: Lc
+            real, intent(in) :: vegfrac
+            real, intent(in) :: thresh
+
+         ! !CONSTANTS:
+            real, parameter :: sigb = 1.0
+            real, parameter :: mb = 0.5
+            real, parameter :: Betab = 90.0
+            real, parameter :: sigv = 1.45
+            real, parameter :: mv = 0.16
+            real, parameter :: Betav = 202.0
+
+            real            :: Lc_veg
+            real            :: Lc_bare
+            real            :: Rveg1
+            real            :: Rveg2
+            real            :: Rbare1
+            real            :: Rbare2
+            real            :: feff_bare
+            real            :: feff_veg
+            real            :: feff
+            real            :: gvf
+            real            :: tmpVal
+            logical         :: skip
+         ! !DESCRIPTION: Computes the drag parition according to Darmenova et al. 2009
+         !               Darmenova, K., Sokolik, I. N., Shao, Y., Marticorena, B., and
+         !               Bergametti, G.: Development of a physically based dust
+         !               emission module within the Weather Research and Forecasting (WRF) model:
+         !               Assessment of dust emission parameterizations and input parameters for source regions in Central and East Asia,
+         !               J. Geophys. Res.-Atmos., 114, D14201, https://doi.org/10.1029/2008JD011236, 2009
+         ! !REVISION HISTORY:
+         !
+         ! 27Jun2024 B.Baker/NOAA    - Original implementation
+         !
+         !EOP
+
+            gvf = vegfrac
+
+            ! vegetation effect
+            skip = .false.
+            if (.not.skip) skip = (gvf < 0.0) .or. (gvf >= thresh)
+            if (.not.skip) then
+               Lc_veg = -0.35 * LOG(1. - gvf)
+               Rveg1 = 1.0 / sqrt(1 - sigv * mv * Lc_veg)
+               Rveg2 = 1.0 / sqrt(1 + mv * Betav * Lc_veg)
+               feff_veg = Rveg1 * Rveg2
+            else
+               feff_veg = 1e-3
+            endif
+
+
+            ! bare surface effect
+
+            Lc_bare = Lc / (1 - gvf) ! avoid any numberical issues at high Lc
+            tmpVal = 1 - sigb * mb * Lc_bare
+            skip=.false.
+            if (.not.skip) skip = (gvf < 0.0) .or. (gvf >= thresh)
+            if (.not.skip) skip = (Lc > 0.2) .or. (tmpVal <= 0.0)
+            if (.not.skip) then
+               Rbare1 = 1.0 / sqrt(1 - sigb * mb * Lc_bare)
+               Rbare2 = 1.0 / sqrt(1 +  mb*Betab * Lc_bare )
+               feff_bare = Rbare1 * Rbare2
+            else
+               feff_bare = 1.0e-3
+            endif
+
+            feff = feff_veg * feff_bare
+
+            if (feff > 1.) then
+               DarmenovaDragPartition = 1.e-3
+            else if (feff <1e-5) then
+               DarmenovaDragPartition = 1.e-3
+            else
+               DarmenovaDragPartition = feff
+            endif
+
+            end function DarmenovaDragPartition
+
+C=======================================================================
+         !===============================================================================
+         !BOP
+         !
+         ! !IROUTINE: Leung drag double moment drag - Applies the Leung drag partition for
+         !            vegetative and barse surfaces
+
+         ! !REVISION HISTORY:
+         !
+         ! 15Aug2024 B.Baker/NOAA    - Original implementation
+            real function LeungDragPartition(Lc, lai, gvf, thresh)
+         ! !USES:
+            implicit NONE
+
+         ! !INPUT PARAMETERS:
+            real, intent(in) :: Lc
+            real, intent(in) :: lai
+            real, intent(in) :: gvf
+            real, intent(in) :: thresh
+         ! LOCAL VARIABLES:
+            real            :: frac_bare       ! Fraction of bare surface
+            real            :: frac_veg        ! fraction of vegetative surface
+            real            :: K               ! normalized gap length
+            real            :: feff_bare       ! effective drag partition due to bare surfaces
+            real            :: feff_veg
+            real            :: Rbare1
+            real            :: Rbare2
+            real            :: Lc_bare
+            real            :: feff
+            real            :: tmpVal
+            real            :: vegfrac
+
+         ! !CONSTANTS:
+            real, parameter :: LAI_THR = 0.33
+            real, parameter :: c = 4.8
+            real, parameter :: f0 = 0.32
+            real, parameter :: sigb = 1.0
+            real, parameter :: mB = 0.5
+            real, parameter :: Betab = 90.0
+
+            feff_bare = 0.
+            feff_veg = 0.
+
+            frac_bare  = MAX(1. - LAI / thresh, 0.)
+
+            if ((LAI <= 0) .or. (LAI >= thresh)) then
+               feff_veg = 0.
+            else if (LAI < thresh) then
+               K = 2. * ( 1 / (1 - LAI) - 1)
+               feff_veg = ( K + f0 * c) / (K + c)
+            endif
+
+            if ((Lc <= 0.2) .and. (Lc > 0) .and. (LAI < thresh)) then
+               Lc_bare = Lc / frac_bare
+               tmpVal = 1 - sigB * mB * Lc_bare
+               if (tmpVal > 0.0) then
+                  Rbare1 = 1.0 / sqrt(1 - sigB * mB* Lc_bare)
+                  Rbare2 = 1.0 / sqrt(1 + BetaB * mB * Lc_bare )
+                  feff_bare = Rbare1 * Rbare2
+               else
+                  feff_bare = 0.
+               endif
+
+            else
+               feff_bare = 0.
+            endif
+
+            feff = (gvf * feff_veg**3 + frac_bare * feff_bare**3) ** (1./3.)
+
+            if (feff > 1.) then
+               LeungDragPartition = 1.e-3
+            else if (feff <1e-5) then
+               LeungDragPartition = 1.e-3
+            else
+               LeungDragPartition = feff
+            endif
+
+            end function LeungDragPartition
 
       end module dust_emis
 
