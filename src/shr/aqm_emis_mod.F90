@@ -60,26 +60,17 @@ contains
     ! -- get component's information
     call NUOPC_CompGet(model, name=name, verbosity=verbosity, rc=localrc)
     if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-      line=__LINE__,  &
-      file=__FILE__,  &
-      rcToReturn=rc)) &
-      return  ! bail out
+      line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
 
     ! -- get component's configuration
     call ESMF_GridCompGet(model, config=config, rc=localrc)
     if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-      line=__LINE__,  &
-      file=__FILE__,  &
-      rcToReturn=rc)) &
-      return  ! bail out
+      line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
 
     ! -- get component's internal state
     call ESMF_GridCompGetInternalState(model, is, localrc)
     if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-      line=__LINE__,  &
-      file=__FILE__,  &
-      rcToReturn=rc)) &
-      return  ! bail out
+      line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
 
     if (associated(is % wrap % emis)) then
       call ESMF_LogSetError(ESMF_RC_PTR_ISALLOC, &
@@ -93,10 +84,7 @@ contains
     ! -- get emission sources
     call aqm_emis_src_create(config, is % wrap % emis, rc=localrc)
     if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-      line=__LINE__,  &
-      file=__FILE__,  &
-      rcToReturn=rc)) &
-      return  ! bail out
+      line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
 
     if (associated(is % wrap % emis)) then
       emisCount = size(is % wrap % emis)
@@ -109,10 +97,7 @@ contains
         end do
         call ESMF_LogWrite(msgString, ESMF_LOGMSG_INFO, rc=localrc)
         if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-          line=__LINE__,  &
-          file=__FILE__,  &
-          rcToReturn=rc)) &
-          return  ! bail out
+          line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
       end if
 
       do item = 1, emisCount
@@ -123,10 +108,7 @@ contains
         ! -- initialize emission sources from config
         call aqm_emis_src_init(model, is % wrap % emis(item), rc=localrc)
         if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-          line=__LINE__,  &
-          file=__FILE__,  &
-          rcToReturn=rc)) &
-          return  ! bail out
+          line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
       end do
       aqm_emis_data => is % wrap % emis
 
@@ -137,10 +119,7 @@ contains
           trim(rName), trim(pName)
         call ESMF_LogWrite(msgString, ESMF_LOGMSG_INFO, rc=localrc)
         if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-          line=__LINE__,  &
-          file=__FILE__,  &
-          rcToReturn=rc)) &
-          return  ! bail out
+          line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
       end if
     end if
 
@@ -172,10 +151,7 @@ contains
     ! -- get number of sources
     emCount = ESMF_ConfigGetLen(config, label="emission_sources:", rc=localrc)
     if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-      line=__LINE__,  &
-      file=__FILE__,  &
-      rcToReturn=rc)) &
-      return  ! bail out
+      line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
 
     allocate(em(emCount), stat=stat)
     if (ESMF_LogFoundAllocError(statusToCheck=stat, msg=ESMF_LOGERR_PASSTHRU, &
@@ -186,10 +162,7 @@ contains
 
     call ESMF_ConfigFindLabel(config, "emission_sources:", rc=localrc)
     if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-      line=__LINE__,  &
-      file=__FILE__,  &
-      rcToReturn=rc)) &
-      return  ! bail out
+      line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
 
     do item = 1, emCount
       ! -- initialize emission source
@@ -205,6 +178,7 @@ contains
       em(item) % count       = 0
       em(item) % layers      = 1
       em(item) % scalefactor = 1.0
+      em(item) % dragopt     = 1
       em(item) % topfraction = -1.0
       em(item) % gridded     = .true.
       em(item) % sync        = .false.
@@ -292,10 +266,7 @@ contains
           trim(em % logprefix), trim(pName)
         call ESMF_LogWrite(msgString, ESMF_LOGMSG_INFO, rc=localrc)
         if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-          line=__LINE__,  &
-          file=__FILE__,  &
-          rcToReturn=rc)) &
-          return  ! bail out
+          line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
       end if
       return
     end if
@@ -303,38 +274,23 @@ contains
     ! -- get component's configuration
     call ESMF_GridCompGet(model, clock=clock, config=config, grid=grid, rc=localrc)
     if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-      line=__LINE__,  &
-      file=__FILE__,  &
-      rcToReturn=rc)) &
-      return  ! bail out
+      line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
 
     call ESMF_ConfigGetAttribute(config, value, &
       label=trim(em % name)//"_type:", default="unknown", rc=localrc)
     if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-      line=__LINE__,  &
-      file=__FILE__,  &
-      rcToReturn=rc)) &
-      return  ! bail out
+      line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
     em % type = ESMF_UtilStringLowerCase(value, rc=localrc)
     if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-      line=__LINE__,  &
-      file=__FILE__,  &
-      rcToReturn=rc)) &
-      return  ! bail out
+      line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
 
     call ESMF_ConfigGetAttribute(config, value, &
       label=trim(em % name)//"_format:", default="netcdf", rc=localrc)
     if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-      line=__LINE__,  &
-      file=__FILE__,  &
-      rcToReturn=rc)) &
-      return  ! bail out
+      line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
     em % format = ESMF_UtilStringLowerCase(value, rc=localrc)
     if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-      line=__LINE__,  &
-      file=__FILE__,  &
-      rcToReturn=rc)) &
-      return  ! bail out
+      line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
 
     select case (trim(em % format))
       case ("binary")
@@ -362,10 +318,7 @@ contains
     call ESMF_ConfigGetAttribute(config, em % path, &
       label=trim(em % name) //"_path:", default="", rc=localrc)
     if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-      line=__LINE__,  &
-      file=__FILE__,  &
-      rcToReturn=rc)) &
-      return  ! bail out
+      line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
     if (em % verbose) then
       call ESMF_LogWrite(trim(em % logprefix)//": "//pName &
         //": path: "//trim(em % path), ESMF_LOGMSG_INFO, rc=localrc)
@@ -388,26 +341,17 @@ contains
         call ESMF_LogWrite(trim(em % logprefix)//": "//pName &
           //": netCDF dataset: "//trim(em % file), ESMF_LOGMSG_INFO, rc=localrc)
         if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-          line=__LINE__,  &
-          file=__FILE__,  &
-          rcToReturn=rc)) &
-          return  ! bail out
+          line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
        end if
     end if
 
     call ESMF_ConfigGetAttribute(config, value, &
       label=trim(em % name)//"_frequency:", default="static", rc=localrc)
     if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-      line=__LINE__,  &
-      file=__FILE__,  &
-      rcToReturn=rc)) &
-      return  ! bail out
+      line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
     em % frequency = ESMF_UtilStringLowerCase(value, rc=localrc)
     if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-      line=__LINE__,  &
-      file=__FILE__,  &
-      rcToReturn=rc)) &
-      return  ! bail out
+      line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
 
     if (em % iofmt == AQMIO_FMT_BIN) then
       if (trim(em % frequency) /= "static") then
@@ -429,38 +373,23 @@ contains
       case ("hourly")
         call ESMF_TimeIntervalSet(timeInterval, h=1, rc=localrc)
         if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-          line=__LINE__,  &
-          file=__FILE__,  &
-          rcToReturn=rc)) &
-          return  ! bail out
+          line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
       case ("daily")
         call ESMF_TimeIntervalSet(timeInterval, d=1, rc=localrc)
         if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-          line=__LINE__,  &
-          file=__FILE__,  &
-          rcToReturn=rc)) &
-          return  ! bail out
+          line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
       case ("weekly")
         call ESMF_TimeIntervalSet(timeInterval, d=7, rc=localrc)
         if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-          line=__LINE__,  &
-          file=__FILE__,  &
-          rcToReturn=rc)) &
-          return  ! bail out
+          line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
       case ("monthly")
         call ESMF_TimeIntervalSet(timeInterval, mm=1, rc=localrc)
         if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-          line=__LINE__,  &
-          file=__FILE__,  &
-          rcToReturn=rc)) &
-          return  ! bail out
+          line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
       case ("static")
         call ESMF_TimeIntervalSet(timeInterval, rc=localrc)
         if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-          line=__LINE__,  &
-          file=__FILE__,  &
-          rcToReturn=rc)) &
-          return  ! bail out
+          line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
       case default
         call ESMF_LogSetError(ESMF_RC_NOT_VALID, &
           msg="- unknown emission frequency: "//trim(em % frequency), &
@@ -473,18 +402,12 @@ contains
 
     call ESMF_ClockGet(clock, startTime=startTime, rc=localrc)
     if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-      line=__LINE__,  &
-      file=__FILE__,  &
-      rcToReturn=rc)) &
-      return  ! bail out
+      line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
 
     em % alarm = ESMF_AlarmCreate(clock, ringTime=startTime, &
       ringInterval=timeInterval, name=trim(em % name)//"_alarm", rc=localrc)
     if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-      line=__LINE__,  &
-      file=__FILE__,  &
-      rcToReturn=rc)) &
-      return  ! bail out
+      line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
     if (em % verbose) then
       call ESMF_LogWrite(trim(em % logprefix)//": "//pName//": set to "&
         //trim(em % frequency)//" input", &
@@ -503,16 +426,10 @@ contains
         call ESMF_ConfigGetAttribute(config, value, &
           label=trim(em % name)//"_period:", default="auto", rc=localrc)
         if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-          line=__LINE__,  &
-          file=__FILE__,  &
-          rcToReturn=rc)) &
-          return  ! bail out
+          line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
         em % period = ESMF_UtilStringLowerCase(value, rc=localrc)
         if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-          line=__LINE__,  &
-          file=__FILE__,  &
-          rcToReturn=rc)) &
-          return  ! bail out
+          line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
         select case (trim(em % period))
           case ("summer", "winter")
             ! -- these are valid values
@@ -537,10 +454,7 @@ contains
         call ESMF_ConfigGetAttribute(config, em % specfile, &
           label=trim(em % name)//"_speciation_file:", rc=localrc)
         if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-          line=__LINE__,  &
-          file=__FILE__,  &
-          rcToReturn=rc)) &
-          return  ! bail out
+          line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
         if (em % verbose) then
           call ESMF_LogWrite(trim(em % logprefix)//": "//pName &
             //": speciation file: "//trim(em % specfile), ESMF_LOGMSG_INFO, rc=localrc)
@@ -553,10 +467,7 @@ contains
         call ESMF_ConfigGetAttribute(config, em % specprofile, &
           label=trim(em % name)//"_speciation_profile:", rc=localrc)
         if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-          line=__LINE__,  &
-          file=__FILE__,  &
-          rcToReturn=rc)) &
-          return  ! bail out
+          line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
         if (em % verbose) then
           call ESMF_LogWrite(trim(em % logprefix)//": "//pName &
             //": speciation profile: "//trim(em % specprofile), ESMF_LOGMSG_INFO, rc=localrc)
@@ -566,38 +477,49 @@ contains
             rcToReturn=rc)) &
             return  ! bail out
         end if
+      !=======================
+      ! FENGSHA
+      !=======================
       case ("fengsha")
+        !=======================
+        ! FENGSHA SCALE FACTOR
+        !=======================
         call ESMF_ConfigGetAttribute(config, em % scalefactor, &
           label=trim(em % name)//"_alpha:", default=1.0, rc=localrc)
         if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-          line=__LINE__,  &
-          file=__FILE__,  &
-          rcToReturn=rc)) &
-          return  ! bail out
+          line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
         if (em % verbose) then
           write(msgString,'(g20.8)') em % scalefactor
           call ESMF_LogWrite(trim(em % logprefix)//": "//pName &
             //": alpha: "//adjustl(msgString), ESMF_LOGMSG_INFO, rc=localrc)
           if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-            line=__LINE__,  &
-            file=__FILE__,  &
-            rcToReturn=rc)) &
-            return  ! bail out
+            line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
         end if
+        !======================
+        ! FENGSHA DRAGOPT
+        !======================
+        call ESMF_ConfigGetAttribute(config, em % dragopt, &
+          label=trim(em % name)//"_dragopt:", default=1, rc=localrc)
+        if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
+          line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
+        if (em % verbose) then
+          write(msgString,'(g20.8)') em % dragopt
+          call ESMF_LogWrite(trim(em % logprefix)//": "//pName &
+            //": dragopt: "//adjustl(msgString), ESMF_LOGMSG_INFO, rc=localrc)
+          if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
+            line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
+        end if
+      !=======================
+      ! GBBEPx
+      !=======================
       case ("gbbepx")
         call ESMF_ConfigGetAttribute(config, value, &
           label=trim(em % name)//"_plume_rise:", default="none", rc=localrc)
         if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-          line=__LINE__,  &
-          file=__FILE__,  &
-          rcToReturn=rc)) &
-          return  ! bail out
+          line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
         em % plumerise = ESMF_UtilStringLowerCase(value, rc=localrc)
         if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-          line=__LINE__,  &
-          file=__FILE__,  &
-          rcToReturn=rc)) &
-          return  ! bail out
+          line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
         if (em % verbose) then
           call ESMF_LogWrite(trim(em % logprefix)//": "//pName &
             //": plume_rise: "//trim(em % plumerise), ESMF_LOGMSG_INFO, rc=localrc)
@@ -640,16 +562,10 @@ contains
         call ESMF_ConfigGetAttribute(config, value, &
           label=trim(em % name)//"_plume_rise:", default="default", rc=localrc)
         if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-          line=__LINE__,  &
-          file=__FILE__,  &
-          rcToReturn=rc)) &
-          return  ! bail out
+          line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
         em % plumerise = ESMF_UtilStringLowerCase(value, rc=localrc)
         if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-          line=__LINE__,  &
-          file=__FILE__,  &
-          rcToReturn=rc)) &
-          return  ! bail out
+          line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
         if (em % verbose) then
           call ESMF_LogWrite(trim(em % logprefix)//": "//pName &
             //": plume_rise: "//trim(em % plumerise), ESMF_LOGMSG_INFO, rc=localrc)
@@ -663,10 +579,7 @@ contains
         call ESMF_ConfigGetAttribute(config, em % layers, &
           label=trim(em % name)//"_layers:", default=1, rc=localrc)
         if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-          line=__LINE__,  &
-          file=__FILE__,  &
-          rcToReturn=rc)) &
-          return  ! bail out
+          line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
         if (em % layers <= 0) then
           call ESMF_LogSetError(ESMF_RC_NOT_VALID, &
             msg="- layers must be greater than 0", &
@@ -688,22 +601,13 @@ contains
         ! -- get coordinate labels
         call ESMF_ConfigFindLabel(config, trim(em % name) // "_latlon_names:", rc=localrc)
         if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-          line=__LINE__,  &
-          file=__FILE__,  &
-          rcToReturn=rc)) &
-          return  ! bail out
+          line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
         call ESMF_ConfigGetAttribute(config, em % latname, rc=localrc)
         if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-          line=__LINE__,  &
-          file=__FILE__,  &
-          rcToReturn=rc)) &
-          return  ! bail out
+          line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
         call ESMF_ConfigGetAttribute(config, em % lonname, rc=localrc)
         if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-          line=__LINE__,  &
-          file=__FILE__,  &
-          rcToReturn=rc)) &
-          return  ! bail out
+          line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
         if (em % verbose) then
           call ESMF_LogWrite(trim(em % logprefix)//": "//pName &
             //": latlon_names: "//trim(em % latname)//" "//trim(em % lonname), &
@@ -718,10 +622,7 @@ contains
         call ESMF_ConfigGetAttribute(config, em % stkdmname, &
           label=trim(em % name)//"_stack_diameter:", default='STKDM', rc=localrc)
         if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-          line=__LINE__,  &
-          file=__FILE__,  &
-          rcToReturn=rc)) &
-          return  ! bail out
+          line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
         if (em % verbose) then
           call ESMF_LogWrite(trim(em % logprefix)//": "//pName &
             //": stack_diameter: "//trim(em % stkdmname), ESMF_LOGMSG_INFO, rc=localrc)
@@ -734,10 +635,7 @@ contains
         call ESMF_ConfigGetAttribute(config, em % stkhtname, &
           label=trim(em % name)//"_stack_height:", default='STKHT', rc=localrc)
         if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-          line=__LINE__,  &
-          file=__FILE__,  &
-          rcToReturn=rc)) &
-          return  ! bail out
+          line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
         if (em % verbose) then
           call ESMF_LogWrite(trim(em % logprefix)//": "//pName &
             //": stack_height: "//trim(em % stkhtname), ESMF_LOGMSG_INFO, rc=localrc)
@@ -750,10 +648,7 @@ contains
         call ESMF_ConfigGetAttribute(config, em % stktkname, &
           label=trim(em % name)//"_stack_temperature:", default='STKTK', rc=localrc)
         if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-          line=__LINE__,  &
-          file=__FILE__,  &
-          rcToReturn=rc)) &
-          return  ! bail out
+          line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
         if (em % verbose) then
           call ESMF_LogWrite(trim(em % logprefix)//": "//pName &
             //": stack_temperature: "//trim(em % stktkname), ESMF_LOGMSG_INFO, rc=localrc)
@@ -766,10 +661,7 @@ contains
         call ESMF_ConfigGetAttribute(config, em % stkvename, &
           label=trim(em % name)//"_stack_velocity:", default='STKVE', rc=localrc)
         if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-          line=__LINE__,  &
-          file=__FILE__,  &
-          rcToReturn=rc)) &
-          return  ! bail out
+          line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
         if (em % verbose) then
           call ESMF_LogWrite(trim(em % logprefix)//": "//pName &
             //": stack_velocity: "//trim(em % stkvename), ESMF_LOGMSG_INFO, rc=localrc)
@@ -785,10 +677,7 @@ contains
         call ESMF_ConfigGetAttribute(config, em % sync, &
           label=trim(em % name)//"_sync:", default=.false., rc=localrc)
         if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-          line=__LINE__,  &
-          file=__FILE__,  &
-          rcToReturn=rc)) &
-          return  ! bail out
+          line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
         if (em % verbose) then
           if (em % sync) then
             call ESMF_LogWrite(trim(em % logprefix)//": "//pName &
@@ -813,10 +702,7 @@ contains
     call ESMF_ConfigGetDim(config, rowCount, columnCount, &
       label=trim(em % name)//"_species::", rc=localrc)
     if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-      line=__LINE__,  &
-      file=__FILE__,  &
-      rcToReturn=rc)) &
-      return  ! bail out
+      line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
 
     if (rowCount > 0) then
       allocate(tmpSpeciesList(rowCount), tmpUnitsList(rowCount), &
@@ -844,23 +730,14 @@ contains
       do item = 1, rowCount
         call ESMF_ConfigNextLine(config, rc=localrc)
         if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-          line=__LINE__,  &
-          file=__FILE__,  &
-          rcToReturn=rc)) &
-          return  ! bail out
+          line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
         ! -- species name
         call ESMF_ConfigGetAttribute(config, value, rc=localrc)
         if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-          line=__LINE__,  &
-          file=__FILE__,  &
-          rcToReturn=rc)) &
-          return  ! bail out
+          line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
         tmpSpeciesList(item) = ESMF_UtilStringUpperCase(value, rc=localrc)
         if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-          line=__LINE__,  &
-          file=__FILE__,  &
-          rcToReturn=rc)) &
-          return  ! bail out
+          line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
         if (readFactors) then
           ! -- scaling factor
           call ESMF_ConfigGetAttribute(config, value, default="1.0", &
@@ -933,10 +810,7 @@ contains
         ! -- create I/O component for emissions
         em % IO = AQMIO_Create(grid, rc=localrc)
         if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-          line=__LINE__,  &
-          file=__FILE__,  &
-          rcToReturn=rc)) &
-          return  ! bail out
+          line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
         if (em % verbose) then
           call ESMF_LogWrite(trim(em % logprefix)//": "//pName &
             //": created I/O component", ESMF_LOGMSG_INFO, rc=localrc)
@@ -1109,18 +983,12 @@ contains
     ! -- get component's information
     call NUOPC_CompGet(model, name=name, verbosity=verbosity, rc=localrc)
     if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-      line=__LINE__,  &
-      file=__FILE__,  &
-      rcToReturn=rc)) &
-      return  ! bail out
+      line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
 
     ! -- get component's internal state
     call ESMF_GridCompGetInternalState(model, is, localrc)
     if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-      line=__LINE__,  &
-      file=__FILE__,  &
-      rcToReturn=rc)) &
-      return  ! bail out
+      line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
 
     nullify(aqm_emis_data)
 
@@ -1313,16 +1181,10 @@ contains
         end if
         call ESMF_AlarmDestroy(em % alarm, rc=localrc)
         if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-          line=__LINE__,  &
-          file=__FILE__,  &
-          rcToReturn=rc)) &
-          return  ! bail out
+          line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
         call AQMIO_Destroy(em % IO, rc=localrc)
         if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-          line=__LINE__,  &
-          file=__FILE__,  &
-          rcToReturn=rc)) &
-          return  ! bail out
+          line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
         if (em % verbose) then
           call ESMF_LogWrite(trim(em % logprefix)//": "//pName &
             //": released resources for dataset: "//trim(em % name), &
@@ -1347,10 +1209,7 @@ contains
           //": all resources released", &
           ESMF_LOGMSG_INFO, rc=localrc)
         if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-          line=__LINE__,  &
-          file=__FILE__,  &
-          rcToReturn=rc)) &
-          return  ! bail out
+          line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
       end if
     end if
 
@@ -1377,18 +1236,12 @@ contains
     ! -- get component's configuration
     call ESMF_GridCompGet(model, clock=clock, rc=localrc)
     if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-      line=__LINE__,  &
-      file=__FILE__,  &
-      rcToReturn=rc)) &
-      return  ! bail out
+      line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
 
     ! -- get component's internal state
     call ESMF_GridCompGetInternalState(model, is, localrc)
     if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-      line=__LINE__,  &
-      file=__FILE__,  &
-      rcToReturn=rc)) &
-      return  ! bail out
+      line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
 
     ! -- return if no internal data set
     if (.not.associated(is % wrap)) return
@@ -1404,25 +1257,16 @@ contains
       if (isRinging) then
         isRinging = ESMF_AlarmIsRinging(em % alarm, rc=localrc)
         if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-          line=__LINE__,  &
-          file=__FILE__,  &
-          rcToReturn=rc)) &
-          return  ! bail out
+          line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
       end if
 
       if (isRinging) then
         call ESMF_ClockGet(clock, currTime=currTime, rc=localrc)
         if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-          line=__LINE__,  &
-          file=__FILE__,  &
-          rcToReturn=rc)) &
-          return  ! bail out
+          line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
         call ESMF_TimeGet(currTime, timeString=timeString, rc=localrc)
         if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-          line=__LINE__,  &
-          file=__FILE__,  &
-          rcToReturn=rc)) &
-          return  ! bail out
+          line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
         if (em % verbose) then
           call ESMF_LogWrite(trim(em % logprefix)//": reading "//&
             trim(em % name)//" @ "//trim(timeString), ESMF_LOGMSG_INFO, rc=localrc)
@@ -1464,10 +1308,7 @@ contains
         end if
         call ESMF_AlarmRingerOff(em % alarm, rc=localrc)
         if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-          line=__LINE__,  &
-          file=__FILE__,  &
-          rcToReturn=rc)) &
-          return  ! bail out
+          line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
       end if
 
     end do
@@ -1512,20 +1353,20 @@ contains
 
   end function aqm_emis_ispresent
 
-  !Add number of points for fire and point source 
+  !Add number of points for fire and point source
   subroutine aqm_emis_desc( etype, nlays, nvars, vnames, units, npoints )
     character(len=*),            intent(in)  :: etype
     integer,           optional, intent(out) :: nlays
     integer,           optional, intent(out) :: nvars
     character(len=16), optional, intent(out) :: vnames(:)
     character(len=16), optional, intent(out) :: units(:)
-    integer,           optional, intent(out) :: npoints  
+    integer,           optional, intent(out) :: npoints
 
     ! -- local variables
     integer :: localrc
     integer :: item, nsrc
     type(aqm_internal_emis_type), pointer :: em
-    type(aqm_state_type), pointer :: stateIn  
+    type(aqm_state_type), pointer :: stateIn
 
     ! -- begin
     ! -- get emission data
@@ -1570,7 +1411,7 @@ contains
       if (present(nvars))  nvars  = 0
       if (present(vnames)) vnames = ""
       if (present(units))  units  = ""
-      if (present(npoints)) npoints  = 0  
+      if (present(npoints)) npoints  = 0
     end if
 
   end subroutine aqm_emis_desc
@@ -1634,7 +1475,7 @@ contains
                 if (abs(fptr(i,j)) < emAccept) then
                   buffer(k) = buffer(k) &
                     + em % factors(item) * fptr(i,j) / stateIn % area(i,j) &
-                                                     / stateIn % area(i,j) 
+                                                     / stateIn % area(i,j)
                 end if
               end do
             end do
@@ -1737,7 +1578,7 @@ contains
               j = em % jp(n)
               buffer(n) = buffer(n) &
                 + em % factors(item) * em % rates(item) % values(n) / stateIn % area(i,j) &
-                                                                    / stateIn % area(i,j)  
+                                                                    / stateIn % area(i,j)
             end do
           case (0)
             ! -- emissions are totals over each grid cell
@@ -1753,7 +1594,7 @@ contains
             do m = 1, size(em % ijmap)
               n = em % ijmap(m)
               buffer(n) = buffer(n) &
-                + em % factors(item) * em % rates(item) % values(n) 
+                + em % factors(item) * em % rates(item) % values(n)
             end do
           case default
             ! -- this case should never occur
@@ -1897,34 +1738,22 @@ contains
     ! -- get model grid
     call ESMF_GridCompGet(model, grid=grid, rc=localrc)
     if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-      line=__LINE__,  &
-      file=__FILE__,  &
-      rcToReturn=rc)) &
-      return  ! bail out
+      line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
 
     ! -- create work field to compute grid coordinate halos
     field = ESMF_FieldCreate(grid, ESMF_TYPEKIND_R8, staggerLoc=ESMF_STAGGERLOC_CORNER, &
       totalLWidth=[1,1], totalUWidth=[1,1], rc=localrc)
     if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-      line=__LINE__,  &
-      file=__FILE__,  &
-      rcToReturn=rc)) &
-      return  ! bail out
+      line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
 
     call ESMF_FieldHaloStore(field, rh, rc=localrc)
     if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-      line=__LINE__,  &
-      file=__FILE__,  &
-      rcToReturn=rc)) &
-      return  ! bail out
+      line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
 
     ! -- compute halos only on active PETs
     call ESMF_GridGet(grid, localDeCount=localDeCount, rc=localrc)
     if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-      line=__LINE__,  &
-      file=__FILE__,  &
-      rcToReturn=rc)) &
-      return  ! bail out
+      line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
 
     if (localDeCount > 0) then
 
@@ -1997,10 +1826,7 @@ contains
 
     call ESMF_FieldHalo(field, rh, rc=localrc)
     if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-      line=__LINE__,  &
-      file=__FILE__,  &
-      rcToReturn=rc)) &
-      return  ! bail out
+      line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
 
     if (localDeCount > 0) then
 
@@ -2020,26 +1846,17 @@ contains
 
     call ESMF_FieldHalo(field, rh, rc=localrc)
     if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-      line=__LINE__,  &
-      file=__FILE__,  &
-      rcToReturn=rc)) &
-      return  ! bail out
+      line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
 
     if (localDeCount > 0) latc = fp(1:ec(1)+1,1:ec(2)+1)
 
     call ESMF_FieldDestroy(field, rc=localrc)
     if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-      line=__LINE__,  &
-      file=__FILE__,  &
-      rcToReturn=rc)) &
-      return  ! bail out
+      line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
 
     call ESMF_FieldHaloRelease(rh, rc=localrc)
     if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-      line=__LINE__,  &
-      file=__FILE__,  &
-      rcToReturn=rc)) &
-      return  ! bail out
+      line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
 
     if (localDeCount < 1) return
 
@@ -2117,18 +1934,12 @@ contains
         call ESMF_LogWrite(trim(em % logprefix) // ": " // trim(pName) // &
           ": grid coord. in degrees", ESMF_LOGMSG_INFO, rc=localrc)
         if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-          line=__LINE__,  &
-          file=__FILE__,  &
-          rcToReturn=rc)) &
-          return  ! bail out
+          line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
       else if (coordSys == ESMF_COORDSYS_SPH_RAD) then
         call ESMF_LogWrite(trim(em % logprefix) // ": " // trim(pName) // &
           ": grid coord. in radians", ESMF_LOGMSG_INFO, rc=localrc)
         if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-          line=__LINE__,  &
-          file=__FILE__,  &
-          rcToReturn=rc)) &
-          return  ! bail out
+          line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
       end if
 
       where(lon  < 0.) lon  = lon  + 360.
@@ -2212,42 +2023,24 @@ contains
     ! -- read stack locations
     call AQMIO_DataRead(em % IO, em % lat, em % latname, rc=localrc)
     if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-      line=__LINE__,  &
-      file=__FILE__,  &
-      rcToReturn=rc)) &
-      return  ! bail out
+      line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
     call AQMIO_DataRead(em % IO, em % lon, em % lonname, rc=localrc)
     if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-      line=__LINE__,  &
-      file=__FILE__,  &
-      rcToReturn=rc)) &
-      return  ! bail out
+      line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
 
     ! -- read stack parameters
     call AQMIO_DataRead(em % IO, em % stkdm, em % stkdmname, rc=localrc)
     if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-      line=__LINE__,  &
-      file=__FILE__,  &
-      rcToReturn=rc)) &
-      return  ! bail out
+      line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
     call AQMIO_DataRead(em % IO, em % stkht, em % stkhtname, rc=localrc)
     if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-      line=__LINE__,  &
-      file=__FILE__,  &
-      rcToReturn=rc)) &
-      return  ! bail out
+      line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
     call AQMIO_DataRead(em % IO, em % stktk, em % stktkname, rc=localrc)
     if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-      line=__LINE__,  &
-      file=__FILE__,  &
-      rcToReturn=rc)) &
-      return  ! bail out
+      line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
     call AQMIO_DataRead(em % IO, em % stkve, em % stkvename, rc=localrc)
     if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-      line=__LINE__,  &
-      file=__FILE__,  &
-      rcToReturn=rc)) &
-      return  ! bail out
+      line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
 
     ! -- set initial (maximum) count
     em % count = size(em % lat)
@@ -2255,10 +2048,7 @@ contains
     ! -- map point source emissions to grid
     call aqm_emis_pts_map(model, em, rc=localrc)
     if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-      line=__LINE__,  &
-      file=__FILE__,  &
-      rcToReturn=rc)) &
-      return  ! bail out
+      line=__LINE__,  file=__FILE__,  rcToReturn=rc)) return  ! bail out
 
     if (em % verbose) then
       write(msgString, '("mapped to ",i0," local grid points")') em % count

@@ -88,7 +88,7 @@ LOGICAL FUNCTION DESC3( FNAME )
   CHARACTER(LEN=*), INTENT(IN) :: FNAME
 
   INCLUDE SUBST_FILES_ID
- 
+
   integer :: localrc
   integer :: is, ie, js, je
   integer :: EMLAYS
@@ -106,7 +106,7 @@ LOGICAL FUNCTION DESC3( FNAME )
   STIME3D = 0
   TSTEP3D = 0
 
-  !!Replace INIT_GASC,AERO,NONR,TRAC to INIT_CONC_1 
+  !!Replace INIT_GASC,AERO,NONR,TRAC to INIT_CONC_1
   IF ( (TRIM(FNAME) .EQ. TRIM(INIT_CONC_1)) ) THEN
 
     ! -- Input initial background values for the following species
@@ -229,7 +229,7 @@ LOGICAL FUNCTION DESC3( FNAME )
     SDATE3D = config % ctm_stdate
     STIME3D = config % ctm_sttime
     TSTEP3D = config % ctm_tstep
-    
+
   ELSE IF ( TRIM( FNAME ) .EQ. TRIM( MET_CRO_3D ) ) THEN
 
     CALL aqm_model_domain_get(nl=NLAYS3D, rc=localrc)
@@ -483,6 +483,9 @@ REAL FUNCTION ENVREAL( LNAME, DESC, DEFAULT, STAT )
     CASE ( 'CTM_WBDUST_FENGSHA_ALPHA' )
       EM => AQM_EMIS_GET("fengsha")
       IF (ASSOCIATED(EM)) ENVREAL = EM % SCALEFACTOR
+    CASE ( 'CTM_WBDUST_FENGSHA_DRAGOPT' )
+      EM => AQM_EMIS_GET("fengsha")
+      IF (ASSOCIATED(EM)) ENVREAL = EM % DRAGOPT
     CASE DEFAULT
       ! Nothing to do
   END SELECT
@@ -619,7 +622,7 @@ subroutine nameval(name, eqname)
     case default
       ! -- nothing to do
   end select
-  
+
 end subroutine nameval
 
 
@@ -691,7 +694,7 @@ logical function interpx( fname, vname, pname, &
       do r = row0, row1
         do c = col0, col1
           k = k + 1
-          if (int(stateIn % stype(c,r)) == lu_index) buffer(k) = 1.0
+          if (int(stateIn % vtype(c,r)) == lu_index) buffer(k) = 1.0
         end do
       end do
     else
@@ -734,7 +737,7 @@ logical function interpx( fname, vname, pname, &
     call aqm_model_get(stateIn=stateIn, rc=localrc)
     if (aqm_rc_check(localrc, msg="Failure to retrieve model input state", &
       file=__FILE__, line=__LINE__)) return
-    
+
     call aqm_model_get(config=config, stateIn=stateIn, rc=localrc)
     if (aqm_rc_check(localrc, msg="Failure to retrieve model input state", &
       file=__FILE__, line=__LINE__)) return
@@ -797,6 +800,8 @@ logical function interpx( fname, vname, pname, &
         p2d => stateIn % fice
       case ("SLTYP")
         p2d => stateIn % stype
+      case ("DLUSE")
+        p2d => stateIn % vtype
       case ("SNOCOV")
         p2d => stateIn % sncov
       case ("SOIM1")
@@ -876,7 +881,7 @@ logical function interpx( fname, vname, pname, &
         return
     end select
 
-! EMIS_1 is not used anymore. Change to other env variables. 
+! EMIS_1 is not used anymore. Change to other env variables.
   else if ( trim(fname) .EQ. 'GR_EMIS_001') then
     ! -- read in emissions
     call aqm_emis_read("anthropogenic", vname, buffer, rc=localrc)
@@ -1118,7 +1123,7 @@ LOGICAL FUNCTION  XTRACT3 ( FNAME, VNAME,                           &
 
   lbuf = (LAY1-LAY0+1)*(ROW1-ROW0+1)*(COL1-COL0+1)
   BUFFER(1:lbuf) = 0.
-  XTRACT3 = .FALSE.  
+  XTRACT3 = .FALSE.
 
   IF (TRIM(FNAME) == TRIM(GRID_CRO_2D)) THEN
 
@@ -1130,23 +1135,6 @@ LOGICAL FUNCTION  XTRACT3 ( FNAME, VNAME,                           &
     if (aqm_rc_check(localrc, msg="Failure to retrieve grid coordinates", &
       file=__FILE__, line=__LINE__)) return
 
-!    if (vname(1:7) == 'LUFRAC_') then
-!      if (aqm_rc_test((LAY0.NE.1).OR.(LAY1.NE.1), &
-!        msg=TRIM(VNAME)//" is 2D. LAY0 and LAY1 must be 1", &
-!        file=__FILE__, line=__LINE__)) return
-!      lu_index = 0
-!      read(vname(8:), *, iostat=localrc) lu_index
-!      if (aqm_rc_test(localrc /= 0, msg="Failure to identify LU_INDEX", &
-!        file=__FILE__, line=__LINE__)) return
-!      k = 0
-!      do r = row0, row1
-!        do c = col0, col1
-!          k = k + 1
-!          if (int(stateIn % stype(c,r)) == lu_index) buffer(k) = 1.0
-!        end do
-!      end do
-!    end if
-
     if (vname(1:7) == 'LUFRAC_') then
       lu_index = 0
       read(vname(8:9), *, iostat=localrc) lu_index
@@ -1156,7 +1144,7 @@ LOGICAL FUNCTION  XTRACT3 ( FNAME, VNAME,                           &
       do r = row0, row1
         do c = col0, col1
           k = k + 1
-          if (int(stateIn % stype(c,r)) == lu_index) buffer(k) = 1.0
+          if (int(stateIn % vtype(c,r)) == lu_index) buffer(k) = 1.0
         end do
       end do
     else
@@ -1188,6 +1176,14 @@ LOGICAL FUNCTION  XTRACT3 ( FNAME, VNAME,                           &
           end do
         case ('MSFX2')
           buffer(1:lbuf) = 1.
+        case ('DLUSE')
+          k = 0
+          do r = row0, row1
+           do c = col0, col1
+            k = k + 1
+            buffer(k) = stateIn % vtype(c,r)
+           end do
+          end do
         case ('PURB')
         case default
           return
@@ -1195,7 +1191,7 @@ LOGICAL FUNCTION  XTRACT3 ( FNAME, VNAME,                           &
     end if
 
   ELSE IF (trim(fname) == trim(MET_CRO_2D)) THEN
-    
+
     call aqm_model_get(stateIn=stateIn, rc=localrc)
     if (aqm_rc_check(localrc, msg="Failure to retrieve model input state", &
       file=__FILE__, line=__LINE__)) return
@@ -1340,7 +1336,7 @@ LOGICAL FUNCTION  XTRACT3 ( FNAME, VNAME,                           &
         return
     end select
 
-  ! EMIS_1 is not used anymore. Change to other env variables. 
+  ! EMIS_1 is not used anymore. Change to other env variables.
   ELSE IF ( trim(fname) .EQ. 'GR_EMIS_001') then
     ! -- read in emissions
     call aqm_emis_read("anthropogenic", vname, buffer, rc=localrc)
@@ -1636,7 +1632,7 @@ LOGICAL FUNCTION WRITE3_REAL2D( FNAME, VNAME, JDATE, JTIME, BUFFER )
   type(aqm_state_type), pointer :: stateOut
 
   WRITE3_REAL2D = .TRUE.
-!move to WRITE3_REAL4D below since we specify all model layers in CMAQ_Control_Misc.nml. 
+!move to WRITE3_REAL4D below since we specify all model layers in CMAQ_Control_Misc.nml.
 !  IF ( TRIM( FNAME ) .EQ. TRIM( CTM_ELMO_1 ) ) THEN
 !  IF ( TRIM( FNAME ) .EQ. TRIM( CTM_DEPV_DIAG ) ) THEN  !test depv
 !  IF ( TRIM( FNAME ) .EQ. TRIM( CTM_DRY_DEP_1 ) ) THEN  !test depv
@@ -1704,7 +1700,7 @@ LOGICAL FUNCTION WRITE3_REAL4D( FNAME, VNAME, JDATE, JTIME, BUFFER )
         stateOut % tr(:,:,:,config % species % p_diag_beg + s) = &
           buffer(:,:,:,p_pm25at + s)
       end do
-      ! add AOD here; point to the 4th species in ELMO_INST 
+      ! add AOD here; point to the 4th species in ELMO_INST
       stateOut % aod = BUFFER(:,:,1,4)
 
     END IF

@@ -22,6 +22,7 @@ module aqm_state_mod
     real(AQM_KIND_R8), dimension(:,:),     pointer :: slmsk    => null()
     real(AQM_KIND_R8), dimension(:,:),     pointer :: sncov    => null()
     real(AQM_KIND_R8), dimension(:,:),     pointer :: stype    => null()
+    real(AQM_KIND_R8), dimension(:,:),     pointer :: vtype    => null()
     real(AQM_KIND_R8), dimension(:,:),     pointer :: t2m      => null()
     real(AQM_KIND_R8), dimension(:,:),     pointer :: tsfc     => null()
     real(AQM_KIND_R8), dimension(:,:),     pointer :: ustar    => null()
@@ -32,6 +33,7 @@ module aqm_state_mod
     real(AQM_KIND_R8), dimension(:,:),     pointer :: xlai     => null()
     real(AQM_KIND_R8), dimension(:,:),     pointer :: zorl     => null()
 
+    real(AQM_KIND_R8), dimension(:,:,:),   pointer :: fvtype   => null()
     real(AQM_KIND_R8), dimension(:,:,:),   pointer :: cldfl    => null()
     real(AQM_KIND_R8), dimension(:,:,:),   pointer :: dkt      => null()
     real(AQM_KIND_R8), dimension(:,:,:),   pointer :: phii     => null()
