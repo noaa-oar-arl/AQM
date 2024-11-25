@@ -170,6 +170,9 @@ C-------------------------------------------------------------------------------
          Real,    Allocatable :: RMSFX4 ( :,: )  ! inverse map scale factor ** 4
          Real,    Allocatable :: LON    ( :,: )  ! longitude
          Real,    Allocatable :: LAT    ( :,: )  ! latitude
+!IVAI
+         Real,    Allocatable :: AREA   ( :,: )  ! grid cell area
+!IVAI
          Real,    Allocatable :: LWMASK ( :,: )  ! land water mask
          Real,    Allocatable :: OCEAN  ( :,: )  ! Open ocean
          Real,    Allocatable :: SZONE  ( :,: )  ! Surf zone
@@ -544,6 +547,9 @@ C-----------------------------------------------------------------------
      &             Grid_Data%RMSFX4  ( NCOLS,NROWS ),
      &             Grid_Data%LON     ( NCOLS,NROWS ),
      &             Grid_Data%LAT     ( NCOLS,NROWS ),
+!IVAI
+     &             Grid_Data%AREA    ( NCOLS,NROWS ),
+!IVAI
      &             Grid_Data%LWMASK  ( NCOLS,NROWS ),
      &             Grid_Data%OCEAN   ( NCOLS,NROWS ),
      &             Grid_Data%SZONE   ( NCOLS,NROWS ),
@@ -854,7 +860,15 @@ C-----------------------------------------------------------------------
             XMSG = MSG1 // TRIM( VNAME ) // ' from ' // GRID_CRO_2D
             Call M3EXIT( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
          End If
-
+!IVAI
+         VNAME = 'AREA'
+         If ( .Not. INTERPX( GRID_CRO_2D, VNAME, PNAME,
+     &                       STRTCOLGC2,ENDCOLGC2, STRTROWGC2,ENDROWGC2, 1,1,
+     &                       JDATE, JTIME, Grid_Data%AREA ) ) Then
+            XMSG = MSG1 // TRIM( VNAME ) // ' from ' // GRID_CRO_2D
+            Call M3EXIT( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
+         End If
+!IVAI
          VNAME = 'LWMASK'
          If ( .Not. INTERPX( GRID_CRO_2D, VNAME, PNAME,
      &                       STRTCOLGC2,ENDCOLGC2, STRTROWGC2,ENDROWGC2, 1,1,

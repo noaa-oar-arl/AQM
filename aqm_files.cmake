@@ -244,4 +244,9 @@ list(APPEND aqm_CCTM_files
 	${localCCTM}/AERO_PHOTDATA.F
 	${localCCTM}/phot.F
 	${localCCTM}/centralized_io_util_module.F
+#IVAI:
+        ${localCCTM}/can_levs_defn.F90
+        ${localCCTM}/can_mask.F90
+        ${localCCTM}/can_trans_mod.F90
+#IVAI
 )
