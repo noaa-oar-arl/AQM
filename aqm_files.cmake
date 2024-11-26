@@ -248,5 +248,7 @@ list(APPEND aqm_CCTM_files
         ${localCCTM}/can_trans_mod.F90
         ${localCCTM}/hrdata_mod.F
         ${localCCTM}/hrdriver.F
+        ${localCCTM}/rbdata_mod.F
+        ${localCCTM}/rbdriver.F
 #IVAI
 )
