@@ -156,8 +156,6 @@ list(APPEND aqm_CCTM_files
 	${GAS}/DEGRADE_SETUP_TOX.F
 	${GAS}/final_degrade.F
 	${GAS}/find_degraded.F
-	${GAS}/hrdata_mod.F
-	${GAS}/hrdriver.F
 	${GAS}/hrg1.F
 	${GAS}/hrg2.F
 	${GAS}/hrg3.F
@@ -244,4 +242,13 @@ list(APPEND aqm_CCTM_files
 	${localCCTM}/AERO_PHOTDATA.F
 	${localCCTM}/phot.F
 	${localCCTM}/centralized_io_util_module.F
+#IVAI:
+        ${localCCTM}/can_levs_defn.F90
+        ${localCCTM}/can_mask.F90
+        ${localCCTM}/can_trans_mod.F90
+        ${localCCTM}/hrdata_mod.F
+        ${localCCTM}/hrdriver.F
+        ${localCCTM}/rbdata_mod.F
+        ${localCCTM}/rbdriver.F
+#IVAI
 )
