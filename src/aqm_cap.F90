@@ -55,11 +55,12 @@ module AQM
       "vegetation_type                          " &
     /)
   ! -- export fields
-  integer, parameter :: exportFieldCount = 2 + 5 + 3   !IVAI: add 5 canopy data fields add 3 photdiag arrays
+  integer, parameter :: exportFieldCount = 3 + 5 + 3   !IVAI: add 1 3D aext diag, 5 2D canopy data fields and 3 2D photdiag arrays
   character(len=*), dimension(exportFieldCount), parameter :: &
     exportFieldNames = (/ &
       "inst_tracer_mass_frac                ", &
       "inst_tracer_diag_aod                 ", &
+      "inst_tracer_diag_aext                ", & !IVAI: aero_ext_550 is 3D AQM var
       "inst_tracer_diag_coszens             ", & !IVAI: photdiag
       "inst_tracer_diag_jo3o1d              ", & !IVAI: photdiag
       "inst_tracer_diag_jno2                ", & !IVAI: photdiag

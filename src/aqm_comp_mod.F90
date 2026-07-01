@@ -184,7 +184,7 @@ contains
     !tstep( 1 ) = config % ctm_tstep         ! TSTEP(1) = local output step
     !tstep( 2 ) = tstep( 1 )                 ! TSTEP(2) = sciproc sync. step (chem)
     !test different tstep(1) and tstep(2)
-    tstep( 1 ) = 1 * 10000                  ! TSTEP(1) = local output step 
+    tstep( 1 ) = 1 * 10000                  ! TSTEP(1) = local output step
     tstep( 2 ) = config % ctm_tstep         ! TSTEP(2) = sciproc sync. step (chem)
     tstep( 3 ) = tstep( 2 )                 ! TSTEP(3) = twoway model time step
 
@@ -338,6 +338,13 @@ contains
               return  ! bail
           case ("inst_tracer_diag_aod")
             call ESMF_FieldGet(field, localDe=localDe, farrayPtr=stateOut % aod, rc=rc)
+            if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+              line=__LINE__, &
+              file=__FILE__)) &
+              return  ! bail
+!IVAI: atm_aod diag
+          case ("inst_tracer_diag_aext")
+            call ESMF_FieldGet(field, localDe=localDe, farrayPtr=stateOut % aext, rc=rc)
             if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
               line=__LINE__, &
               file=__FILE__)) &
@@ -679,7 +686,7 @@ contains
               line=__LINE__, &
               file=__FILE__)) &
               return  ! bail
-!canopy variables 
+!canopy variables
 !          case ("forest_canopy_height")
 !            call ESMF_FieldGet(field, localDe=localDe, farrayPtr=stateIn % stemp, rc=rc)
 !            if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &

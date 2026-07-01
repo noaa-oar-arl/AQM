@@ -868,7 +868,6 @@ logical function interpx( fname, vname, pname, &
     !   return
     end select
 
-
     IF ( TRIM( VNAME ) .EQ. TRIM('LAIE') ) THEN
 
       nullify(stateOut)
@@ -1768,9 +1767,12 @@ LOGICAL FUNCTION WRITE3_REAL2D( FNAME, VNAME, JDATE, JTIME, BUFFER )
 
 !  END IF
 
+! photdiag fields
   IF ( TRIM( FNAME ) .EQ. TRIM( CTM_RJ_1 ) ) THEN
 
     WRITE3_REAL2D = .FALSE.
+
+!    print*, 'AQM_METHODS: FNAME= ', FNAME, VNAME   !IVAI: JO3O1D JNO2 ... (list of 15 vars)
 
     IF ( TRIM( VNAME ) .EQ. TRIM('COSZENS') ) THEN
 
@@ -1835,7 +1837,6 @@ LOGICAL FUNCTION WRITE3_REAL4D( FNAME, VNAME, JDATE, JTIME, BUFFER )
   integer, parameter :: p_pm25at = 1   !(change from 23)
 
   WRITE3_REAL4D = .TRUE.
-!CTM_PMDIAG_1 seems to be removed. Use CTM_ELMO_1.
   IF ( TRIM( FNAME ) .EQ. TRIM( CTM_ELMO_1 ) ) THEN
 
     WRITE3_REAL4D = .FALSE.
@@ -1848,12 +1849,21 @@ LOGICAL FUNCTION WRITE3_REAL4D( FNAME, VNAME, JDATE, JTIME, BUFFER )
       if (aqm_rc_check(localrc, msg="Failure to retrieve model output state", &
         file=__FILE__, line=__LINE__)) return
 
-      do s = 0, config % species % ndiag - 4
+      do s = 0, config % species % ndiag - 2
         stateOut % tr(:,:,:,config % species % p_diag_beg + s) = &
           buffer(:,:,:,p_pm25at + s)
       end do
-      ! add AOD here; point to the 4th species in ELMO_INST
+      ! add TAU_AERO_550 from AQM here; point to the 4th species in ELMO_INST
       stateOut % aod = BUFFER(:,:,1,4)
+
+!      print*, 'AQM_METHODS: BUFFER (4) min/max= ' , minval(BUFFER(:,:,1,4)), maxval(BUFFER(:,:,1,4))
+!      print*, 'AQM_METHODS: BUFFER (4) = ' , BUFFER(:,:,1,4)
+
+      ! add 3D AERO_EXT_550 from AQM here; point to the 5th species in ELMO_INST
+      stateOut % aext = BUFFER(:,:,:,5)
+
+!      print*, 'AQM_METHODS: BUFFER (5) min/max= ' , minval(BUFFER(:,:,1,5)), maxval(BUFFER(:,:,1,5))
+!      print*, 'AQM_METHODS: BUFFER (5) = ' , BUFFER(:,:,1,5)
 
     END IF
 

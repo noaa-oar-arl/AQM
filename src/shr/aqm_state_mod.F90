@@ -55,6 +55,7 @@ module aqm_state_mod
     real(AQM_KIND_R8), dimension(:,:),     pointer :: claie    => null()
 
     ! -- diagnostics
+    real(AQM_KIND_R8), dimension(:,:,:),   pointer :: aext     => null()
     real(AQM_KIND_R8), dimension(:,:),     pointer :: aod      => null()
     ! -- photolysis diagnostics
     real(AQM_KIND_R8), dimension(:,:),     pointer :: coszens  => null()
