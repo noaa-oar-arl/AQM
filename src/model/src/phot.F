@@ -2027,7 +2027,17 @@ C...modules
 
       ! Store PM Diagnostic AOD and extinction
       ELMO_AOD_550 = TAU_AERO_550
-      ELMO_EXT_550 = AERO_EXT_550
+! IVAI: Save 3d tendencies here
+!      ELMO_EXT_550 = AERO_EXT_550 !IVAI
+! phot:
+!      ELMO_EXT_550 = rj_can      ( :,:,       1:NLAYS , LO3O1D )          ! subset NLAYS
+!      ELMO_EXT_550 = rj_can      ( :,:, NLAYC+1:NLAYT , LO3O1D )          ! subset NLAYC+1,NLAYT
+!      ELMO_EXT_550 = rj_can      ( :,:,       1:NLAYS , LNO2   )          ! subset NLAYS
+! rb/hrdriver:
+!      ELMO_EXT_550 = conc_can    ( :,:,       1:NLAYS , LGC_O3)           ! subset NLAYS
+!
+      ELMO_EXT_550 = o3_tend     ( :,:,: )               ! "o3_tend"     rb/hrdriver
+!      ELMO_EXT_550 = o3_tend_can ( :,:,       1:NLAYS )  ! "o3_tend_can" rb/hrdriver
 
 !...report on whether stratospheric ozone column satisfies climatological minimums
       IF( N_TROPO_O3_TOGGLE .GT. 0 )THEN
