@@ -82,7 +82,7 @@ C**********************************************************************
       USE CGRID_SPCS            ! CGRID mechanism species
       USE UTILIO_DEFN
       USE PHOT_MOD, Only: INIT_PHOT_SHARED, RJ,                    ! photolysis rate, in-line module
-     &                    RJ_CAN, LO3O1D, O3_TEND
+     &                    RJ_CAN, LO3O1D, O3_TEND, NO2_TEND
       USE AEROSOL_CHEMISTRY
 !     USE DEGRADE_SETUP_TOX, ONLY : NCELLS, N_REACT, RXTANT_MAP
       USE DEGRADE_ROUTINES,  ONLY : NCELLS, N_REACT, RXTANT_MAP,
@@ -119,6 +119,7 @@ C**********************************************************************
 !      CONC_CAN(1,2,3) <= CONC(1)   ! ALL CANOPY & NON-CANOPY COLUMNS !
 !      RJ_CAN
 !      O3_TEND_CAN (:,:,1:NLAYT)
+!      NO2_TEND_CAN (:,:,1:NLAYT)
 ! =====================
 
       use can_trans_mod
@@ -250,6 +251,10 @@ C..Local Variables:
       REAL, ALLOCATABLE, SAVE:: o3_new     ( :, :, : )      ! o3 after  gas-phase
       REAL, ALLOCATABLE, SAVE:: o3_old_can ( :, :, : )
       REAL, ALLOCATABLE, SAVE:: o3_new_can ( :, :, : )
+      REAL, ALLOCATABLE, SAVE:: no2_old    ( :, :, : )      ! no2 before gas-phase
+      REAL, ALLOCATABLE, SAVE:: no2_new    ( :, :, : )      ! no2 after  gas-phase
+      REAL, ALLOCATABLE, SAVE:: no2_old_can( :, :, : )
+      REAL, ALLOCATABLE, SAVE:: no2_new_can( :, :, : )
 
       INTERFACE
          SUBROUTINE RBSOLVER ( JDATE, JTIME, CHEMSTEP, NCSP,
@@ -337,7 +342,11 @@ C.. Get fractional seawater coverage from the OCEAN file.
      &             o3_old     ( NCOLS, NROWS, NLAYS ), 
      &             o3_new     ( NCOLS, NROWS, NLAYS ), 
      &             o3_old_can ( NCOLS, NROWS, NLAYT ),
-     &             o3_new_can ( NCOLS, NROWS, NLAYT ))
+     &             o3_new_can ( NCOLS, NROWS, NLAYT ),
+     &             no2_old    ( NCOLS, NROWS, NLAYS ),
+     &             no2_new    ( NCOLS, NROWS, NLAYS ),
+     &             no2_old_can( NCOLS, NROWS, NLAYT ),
+     &             no2_new_can( NCOLS, NROWS, NLAYT ))
 
          ALLOCATE( IRRCELL( BLKSIZE ) )
          IRRCELL = 0
@@ -491,7 +500,8 @@ C   appropriately updated after the solver finds a solution.
 
 ! NB. Species indices defined in "rbdata_mod" e.g. O3 = 4
 ! Species before gas-phase tendencies added
-      o3_old     (:,:,:) = CONC    (:,:,:,4) ! O3 = 4
+      o3_old  (:,:,:) = CONC (:,:,:,4) ! O3 = 4
+      no2_old (:,:,:) = CONC (:,:,:,1) ! NO2 = 1
 
 ! Initialize canopy levels 
       If ( CANOPY_SHADE  ) Then
@@ -584,7 +594,8 @@ c++++++++++++++++++++++++Debug section++++++++++++++++++++++++++++++++++
 
 ! NB. Species indices defined ! in "rbdata_mod", for O3 = 4)
 ! Species before gas-phase tendencies added
-      o3_old_can (:,:,1:NLAYT) = CONC_CAN(:,:,1:NLAYT,4) ! O3 = 4
+      o3_old_can (:,:,1:NLAYT) = CONC_CAN(:,:,1:NLAYT,4) ! O3  = 4
+      no2_old_can(:,:,1:NLAYT) = CONC_CAN(:,:,1:NLAYT,1) ! NO2 = 1
 
       End If  !CANOPY_SHADE
 
@@ -896,15 +907,19 @@ C  Update CGRID based on the degradation routines
 
 ! Species after gas-phase (canopy off)
       o3_new  (:,:,:) = CONC(:,:,:,4)
+      no2_new (:,:,:) = CONC(:,:,:,1)
 
 ! Gas-phase tendency  ppmv sec-1 (canopy off)
       o3_tend (:,:,:) = ( o3_new(:,:,:) -  o3_old(:,:,:)) /
+     &                  REAL (CHEMSTEP, 4) ! ppm  sec-1
+      no2_tend(:,:,:) = (no2_new(:,:,:) - no2_old(:,:,:)) /
      &                  REAL (CHEMSTEP, 4) ! ppm  sec-1
 
 C... Update CONC_CAN/CGRID_CAN concentrations' upper-most (NLAYS:NLAYT) layers (rbsolver not called)
 C... Carry over the top (NLAYS-NLAYC:NLAYS) original model values for the matching layers
       IF ( CANOPY_SHADE ) THEN
          o3_old_can (:,:,NLAYT-NLAYC+1:NLAYT) = CONC(:,:,NLAYS-NLAYC+1:NLAYS,4)
+         no2_old_can(:,:,NLAYT-NLAYC+1:NLAYT) = CONC(:,:,NLAYS-NLAYC+1:NLAYS,1)
       END IF
 
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
@@ -1175,8 +1190,11 @@ C... Carry over the top (NLAYS-NLAYC:NLAYS) original model values for the matchi
 
 ! Species after gas-phase (NB. only canopy-grid cells are updated)
       o3_new_can  (:,:,1:NLAYT) = CONC_CAN(:,:,1:NLAYT,4) ! O3 = 4
+      no2_new_can (:,:,1:NLAYT) = CONC_CAN(:,:,1:NLAYT,1) ! NO2 = 1
 
-      o3_tend_can (:,:,1:NLAYT) = ( o3_new_can (:,:,1:NLAYT) -  o3_old_can (:,:,1:NLAYT)) /
+      o3_tend_can (:,:,1:NLAYT) = (  o3_new_can (:,:,1:NLAYT) -  o3_old_can (:,:,1:NLAYT)) /
+     &                       REAL (CHEMSTEP, 4) ! ppmv sec-1
+      no2_tend_can(:,:,1:NLAYT) = ( no2_new_can (:,:,1:NLAYT) - no2_old_can (:,:,1:NLAYT)) /
      &                       REAL (CHEMSTEP, 4) ! ppmv sec-1
 
 !===============================================================================
@@ -1244,9 +1262,12 @@ c++++++++++++++++++++++++Debug section++++++++++++++++++++++++++++++++++
 
 ! Species after gas-phase & canopy_transfer C2R
       o3_new  (:,:,:) = CONC(:,:,:,4)
+      no2_new (:,:,:) = CONC(:,:,:,1)
 
 ! Gas-phase tendency after canopy_transfer ppmv sec-1
       o3_tend (:,:,:) = ( o3_new(:,:,:) -  o3_old(:,:,:)) /
+     &                  REAL (CHEMSTEP, 4) ! ppm  sec-1
+      no2_tend(:,:,:) = (no2_new(:,:,:) - no2_old(:,:,:)) /
      &                  REAL (CHEMSTEP, 4) ! ppm  sec-1
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

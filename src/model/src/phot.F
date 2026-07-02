@@ -2027,6 +2027,7 @@ C...modules
 
       ! Store PM Diagnostic AOD and extinction
       ELMO_AOD_550 = TAU_AERO_550
+
 ! IVAI: Save 3d tendencies here
 !      ELMO_EXT_550 = AERO_EXT_550 !IVAI
 ! phot:
@@ -2038,6 +2039,7 @@ C...modules
 !
       ELMO_EXT_550 = o3_tend     ( :,:,: )               ! "o3_tend"     rb/hrdriver
 !      ELMO_EXT_550 = o3_tend_can ( :,:,       1:NLAYS )  ! "o3_tend_can" rb/hrdriver
+!      ELMO_EXT_550 = o3_tend_can ( :,:, NLAYC+1:NLAYT )  ! "o3_tend_can" rb/hrdriver
 
 !...report on whether stratospheric ozone column satisfies climatological minimums
       IF( N_TROPO_O3_TOGGLE .GT. 0 )THEN
@@ -2056,8 +2058,8 @@ C...modules
          VARNM = 'COSZENS'
          IF ( .NOT. WRITE3( CTM_RJ_1, VARNM, ODATE, OTIME,
 ! rb/hrdriver:
-     &      o3_tend    ( :,:, 1     )) ) THEN ! "o3_tend"     rb/hrdriver
-!    &      o3_tend_can( :,:, 3     )) ) THEN ! "o3_tend_can" rb/hrdriver
+!    &      o3_tend    ( :,:, 1     )) ) THEN ! "o3_tend"     rb/hrdriver
+     &      no2_tend   ( :,:, 1     )) ) THEN ! "no2_tend"     rb/hrdriver
 !
 ! canopy_transfer:
 !    &      CONC_MOD  (:,:, 2  , LGC_O3 )  ) ) THEN  ! LGC_O3 = 4
@@ -2163,9 +2165,10 @@ C...modules
          VARNM = 'JNO2'
          IF ( .NOT. WRITE3( CTM_RJ_1, VARNM, ODATE, OTIME, 
 ! rb/hrdriver:
-!    &      o3_tend    ( :,:,1 )     ) ) THEN ! "o3_tend"     rb/hrdriver
-     &      o3_tend    ( :,:,2 )     ) ) THEN !
+!    &      o3_tend    ( :,:,2 )     ) ) THEN !
+     &      no2_tend   ( :,:,2 )     ) ) THEN ! "no2_tend"     rb/hrdriver
 !>   &      o3_tend_can( :,:,1 )     ) ) THEN ! 
+!>   &     no2_tend_can( :,:,1 )     ) ) THEN ! "no2_tend_can" rb/hrdriver
 ! canopy_transfer:
 !    &      CONC_MOD  (:,:, 1  , LGC_NO2)  ) ) THEN
 !    &      CONC_CAN  (:,:, 3  , LGC_O3 )  ) ) THEN

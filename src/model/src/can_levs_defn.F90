@@ -93,6 +93,7 @@
    real (kind=4), dimension( :, :, :, : ), allocatable, save :: CONC_CAN    ! concentrations (including gas and aerosols)
    real (kind=4), dimension( :, :, :, : ), allocatable, save :: CONC_MOD    ! concentrations (including gas and aerosols)
    real (kind=4), dimension( :, :, :    ), allocatable, save :: O3_TEND_CAN ! ozone tendency gas-phase on combined canopy plus model layers
+   real (kind=4), dimension( :, :, :    ), allocatable, save :: NO2_TEND_CAN ! NO2  tendency gas-phase on combined canopy plus model layers
 ! gas-phase conc. 2m diagnostics
    real  (kind=4), dimension( :, :, : ), allocatable, save :: CONC_2M
 
@@ -105,7 +106,7 @@
               ta3, qv3, ws3, pres3, dens3, klower_can, zmom_can, zmid_can, sigmom_can, sigmid_can, &
               ZH_CAN, ZF_CAN, &
               TA_CAN, QV_CAN, WS_CAN, PRES_CAN, DENS_CAN, &
-              KHETERO_CAN, CONC_CAN, O3_TEND_CAN, CONC_MOD, CONC_2M, &
+              KHETERO_CAN, CONC_CAN, O3_TEND_CAN, NO2_TEND_CAN, CONC_MOD, CONC_2M, &
               init_can_levs, get_can_levs
 
    contains
@@ -142,6 +143,7 @@
 ! gas-phase array
              CONC_MOD  (NCOLS, NROWS, NLAYS, NSPCSD), &
           O3_TEND_CAN  (NCOLS, NROWS, NLAYT)        , &
+          NO2_TEND_CAN (NCOLS, NROWS, NLAYT)        , &
              CONC_CAN  (NCOLS, NROWS, NLAYT, NSPCSD), &
              CONC_2M   (NCOLS, NROWS,        NSPCSD), &
     KHETERO_CAN(NHETERO,NCOLS, NROWS, NLAYT), &
@@ -215,6 +217,7 @@
    KHETERO_CAN(:,:,:,:) = 0.0D0
 
    O3_TEND_CAN (:,:,:)= 0.0
+   NO2_TEND_CAN(:,:,:)= 0.0
 
 ! Initialize FIRSTIME only!
    CONC_MOD (:,:,:,:) = CONC (:,:,:,:) ! FIRSTIME
